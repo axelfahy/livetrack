@@ -1,0 +1,70 @@
+version: '3'
+
+networks:
+  monitoring:
+    external: true
+    name: monitoring
+
+services:
+  # Postgres
+  postgres:
+    image: postgres:15.3
+    restart: always
+    environment: 
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      - '5438:5432'
+    volumes:
+      - /data/postgres_data:/var/lib/postgresql/data
+      # copy the sql script to create tables
+      - ./setup/init.sql:/docker-entrypoint-initdb.d/init.sql
+    user: 1000:1000 # only uncomment after the database is created, with the correct uid:gid
+    networks:
+      - monitoring
+
+  # Fetcher
+  livetrack-fetcher:
+    image: fahy.xyz/livetrack:v1.0.0
+    environment:
+      - PORT=9101
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - METRICS_SUBSYSTEM=fetcher
+    command: /livetrack fetcher
+    ports:
+      - 9101:9101
+    networks:
+      - monitoring
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9101"
+    restart: unless-stopped
+
+  # Livetrack test
+  livetrack-test:
+    image: fahy.xyz/livetrack:v1.0.0
+    environment:
+      - PORT=9102
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - ORGANIZATION=alpsfreeride
+      - TELEGRAM_CHANNEL=@test_tracking_go
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN_TEST_TRACKING_GO}
+      - METRICS_SUBSYSTEM=bot
+    command: /livetrack bot
+    ports:
+      - 9102:9102
+    networks:
+      - monitoring
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9102"
+      - "prometheus.io/extra-labels=livetrack:@test_tracking_go"
+    restart: unless-stopped

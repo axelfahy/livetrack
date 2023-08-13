@@ -1,0 +1,149 @@
+package db
+
+import (
+	"context"
+	"log/slog"
+	"time"
+
+	"fahy.xyz/livetrack/model"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+type Manager struct {
+	client  *pgxpool.Pool
+	logger  *slog.Logger
+	metrics managerMetrics
+}
+
+type managerMetrics interface {
+	PilotRetrievedInc()
+	TrackRetrievedInc()
+	TrackWrittenInc()
+}
+
+type EmptyManagerMetrics struct{}
+
+func (m EmptyManagerMetrics) PilotRetrievedInc() {}
+func (m EmptyManagerMetrics) TrackRetrievedInc() {}
+func (m EmptyManagerMetrics) TrackWrittenInc()   {}
+
+func NewManager(ctx context.Context, databaseUrl string, logger *slog.Logger, metrics managerMetrics) (*Manager, error) {
+	conn, err := pgxpool.New(ctx, databaseUrl)
+	if err != nil {
+		return nil, err
+	}
+	if err = conn.Ping(ctx); err != nil {
+		return nil, err
+	}
+	manager := &Manager{
+		client:  conn,
+		logger:  logger,
+		metrics: metrics,
+	}
+	manager.logger.Info("Connected to database", "manager", manager)
+	return manager, nil
+}
+
+func (m *Manager) Ping(ctx context.Context) error {
+	return m.client.Ping(ctx)
+}
+
+func (m *Manager) Close() {
+	m.client.Close()
+}
+
+func (m *Manager) GetAllPilots(ctx context.Context) ([]model.Pilot, error) {
+	rows, err := m.client.Query(ctx, "SELECT id, name, home, orgs, tracker_type FROM pilot")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	pilots, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[model.Pilot])
+	if err != nil {
+		return nil, err
+	}
+	m.logger.Debug("Pilots retrieved", "pilots", pilots)
+	m.metrics.PilotRetrievedInc()
+	return pilots, nil
+}
+
+func (m *Manager) GetPilotsFromOrg(ctx context.Context, org string) ([]model.Pilot, error) {
+	rows, err := m.client.Query(ctx, "SELECT id, name, home, orgs, tracker_type FROM pilot WHERE $1=ANY(orgs)", org)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	pilots, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[model.Pilot])
+	if err != nil {
+		return nil, err
+	}
+	m.logger.Debug("Pilots retrieved", "pilots", pilots, "org", org)
+	m.metrics.PilotRetrievedInc()
+	return pilots, nil
+}
+
+func (m *Manager) WriteTrack(ctx context.Context, pilotId string, track []model.Point) error {
+	m.logger.Debug("Inserting track", "pilot", pilotId, "track", track)
+	sqlStatement := `
+	INSERT INTO track (pilot_id, unix_time, latitude, longitude, altitude, msg_type, msg_content)
+	VALUES ($1, $2, $3, $4, $5, $6, $7)`
+	for _, point := range track {
+		_, err := m.client.Exec(
+			ctx,
+			sqlStatement,
+			pilotId,
+			point.DateTime,
+			point.Latitude,
+			point.Longitude,
+			point.Altitude,
+			point.MsgType,
+			point.MsgContent,
+		)
+		if err != nil {
+			return nil
+		}
+	}
+	m.logger.Debug("Track written", "pilotId", pilotId, "track", track)
+	m.metrics.TrackWrittenInc()
+	return nil
+}
+
+// GetTrackOfDay returns the track of the pilot for the given day.
+func (m *Manager) GetTrackOfDay(ctx context.Context, pilotId string, date time.Time) ([]model.Point, error) {
+	day := date.Format("2006-01-02")
+	m.logger.Debug("Retrieving track", "pilot", pilotId, "day", day)
+	sqlStatement := "SELECT unix_time, latitude, longitude, altitude, msg_type, msg_content FROM track WHERE pilot_id = $1 AND DATE(unix_time) = $2 ORDER BY unix_time"
+	rows, err := m.client.Query(ctx, sqlStatement, pilotId, day)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	points, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[model.Point])
+	if err != nil {
+		return nil, err
+	}
+	m.logger.Debug("Track retrieved", "pilot", pilotId, "points", points)
+	m.metrics.TrackRetrievedInc()
+	return points, nil
+}
+
+// GetTrackSince returns the track of the pilot since the given date.
+//
+// If a point occurred at the since time, it is not returned.
+func (m *Manager) GetTrackSince(ctx context.Context, pilotId string, since time.Time) ([]model.Point, error) {
+	m.logger.Debug("Retrieving track", "pilot", pilotId, "since", since)
+	sqlStatement := "SELECT unix_time, latitude, longitude, altitude, msg_type, msg_content FROM track WHERE pilot_id = $1 AND unix_time > $2 ORDER BY unix_time"
+	rows, err := m.client.Query(ctx, sqlStatement, pilotId, since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	points, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[model.Point])
+	if err != nil {
+		return nil, err
+	}
+	m.logger.Debug("Track retrieved", "pilot", pilotId, "points", points)
+	return points, nil
+}
