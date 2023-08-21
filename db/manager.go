@@ -69,6 +69,29 @@ func (m *Manager) GetAllPilots(ctx context.Context) ([]model.Pilot, error) {
 	return pilots, nil
 }
 
+// GetDatesWithCount returns the recent dates (n=limit) with the number of flights for the day.
+func (m *Manager) GetDatesWithCount(ctx context.Context, limit int) ([]time.Time, []int, error) {
+	rows, err := m.client.Query(ctx, "SELECT COUNT(DISTINCT pilot_id), unix_time::date FROM track GROUP BY unix_time::date ORDER BY unix_time DESC LIMIT $1", limit)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+
+	dates := []time.Time{}
+	counts := []int{}
+	for rows.Next() {
+		var flightDate time.Time
+		var count int
+		if err = rows.Scan(&count, &flightDate); err != nil {
+			return nil, nil, err
+		}
+		dates = append(dates, flightDate)
+		counts = append(counts, count)
+	}
+	m.logger.Debug("Dates retrieved", "dates", dates, "counts", counts)
+	return dates, counts, nil
+}
+
 func (m *Manager) GetPilotsFromOrg(ctx context.Context, org string) ([]model.Pilot, error) {
 	rows, err := m.client.Query(ctx, "SELECT id, name, home, orgs, tracker_type FROM pilot WHERE $1=ANY(orgs)", org)
 	if err != nil {
@@ -108,6 +131,25 @@ func (m *Manager) WriteTrack(ctx context.Context, pilotId string, track []model.
 	m.logger.Debug("Track written", "pilotId", pilotId, "track", track)
 	m.metrics.TrackWrittenInc()
 	return nil
+}
+
+// GetAllTracksOfDay returns all the tracks of the day.
+//
+// The key of the map returned is the name of the pilot.
+func (m *Manager) GetAllTracksOfDay(ctx context.Context, date time.Time) (map[string][]model.Point, error) {
+	tracks := make(map[string][]model.Point)
+	pilots, err := m.GetAllPilots(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, pilot := range pilots {
+		points, err := m.GetTrackOfDay(ctx, pilot.Id, date)
+		if err != nil {
+			return nil, err
+		}
+		tracks[pilot.Name] = points
+	}
+	return tracks, nil
 }
 
 // GetTrackOfDay returns the track of the pilot for the given day.
