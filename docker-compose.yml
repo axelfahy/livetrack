@@ -46,25 +46,111 @@ services:
       - "prometheus.io/port=9101"
     restart: unless-stopped
 
+  # Backend
+  livetrack-backend:
+    image: fahy.xyz/livetrack:v1.0.1
+    environment:
+      - PORT=8080
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - METRICS_SUBSYSTEM=backend
+    command: /livetrack web
+    ports:
+      - 8080:8080
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=8080"
+    restart: unless-stopped
+
   # Livetrack test
-  livetrack-test:
+  #livetrack-test:
+  #  image: fahy.xyz/livetrack:v1.0.0
+  #  environment:
+  #    - PORT=9102
+  #    - POSTGRES_HOST=postgres
+  #    - POSTGRES_USER=${POSTGRES_USER}
+  #    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  #    - ORGANIZATION=alpsfreeride
+  #    - TELEGRAM_CHANNEL=@test_tracking_go
+  #    - TELEGRAM_TOKEN=${TELEGRAM_TOKEN_TEST_TRACKING_GO}
+  #    - METRICS_SUBSYSTEM=bot
+  #  command: /livetrack bot
+  #  ports:
+  #    - 9102:9102
+  #  networks:
+  #    - monitoring
+  #  labels:
+  #    - "prometheus.io/scrape=true"
+  #    - "prometheus.io/port=9102"
+  #    - "prometheus.io/extra-labels=livetrack:@test_tracking_go"
+  #  restart: unless-stopped
+
+  # Alpsfreeride
+  livetrack-alpsfreeride:
     image: fahy.xyz/livetrack:v1.0.0
     environment:
-      - PORT=9102
+      - PORT=9103
       - POSTGRES_HOST=postgres
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - ORGANIZATION=alpsfreeride
-      - TELEGRAM_CHANNEL=@test_tracking_go
-      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN_TEST_TRACKING_GO}
+      - TELEGRAM_CHANNEL=@alpsfreeride_tracking
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
       - METRICS_SUBSYSTEM=bot
     command: /livetrack bot
     ports:
-      - 9102:9102
+      - 9103:9103
     networks:
       - monitoring
     labels:
       - "prometheus.io/scrape=true"
-      - "prometheus.io/port=9102"
-      - "prometheus.io/extra-labels=livetrack:@test_tracking_go"
+      - "prometheus.io/port=9103"
+      - "prometheus.io/extra-labels=livetrack:@alpsfreeride"
+    restart: unless-stopped
+
+  # Axlair
+  livetrack-axlair:
+    image: fahy.xyz/livetrack:v1.0.0
+    environment:
+      - PORT=9104
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - ORGANIZATION=axlair
+      - TELEGRAM_CHANNEL=@axlair_tracking
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - METRICS_SUBSYSTEM=bot
+    command: /livetrack bot
+    ports:
+      - 9104:9104
+    networks:
+      - monitoring
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9104"
+      - "prometheus.io/extra-labels=livetrack:@axlair"
+    restart: unless-stopped
+
+  # Followus
+  livetrack-followus:
+    image: fahy.xyz/livetrack:v1.0.0
+    environment:
+      - PORT=9105
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - ORGANIZATION=followus
+      - TELEGRAM_CHANNEL=@FollowUsIfYouCan_channel
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - METRICS_SUBSYSTEM=bot
+    command: /livetrack bot
+    ports:
+      - 9105:9105
+    networks:
+      - monitoring
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9105"
+      - "prometheus.io/extra-labels=livetrack:@followus"
     restart: unless-stopped

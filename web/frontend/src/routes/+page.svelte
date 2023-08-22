@@ -1,14 +1,13 @@
 <script>
-  import Map from './Map.svelte';
+	import Map from './Map.svelte';
 
-  let mapComponent;
-
+	let mapComponent;
 </script>
 
 <div>
-  <Map bind:this={mapComponent} />
+	<Map bind:this={mapComponent} />
 </div>
 
 <style>
-  /* Page-specific styles... */
+	/* Page-specific styles... */
 </style>
