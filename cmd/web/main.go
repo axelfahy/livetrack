@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -21,19 +20,15 @@ type webEnvConfig struct {
 	// TODO
 }
 
-// access control and  CORS middleware
-func accessControlMiddleware(next http.Handler) http.Handler {
+// enableCORS handles access control and  CORS middleware
+func enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS,PUT")
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
-		fmt.Print("in access control")
-		fmt.Print(next)
-
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
 			return
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }
@@ -71,16 +66,17 @@ func Main(ctx context.Context) {
 	logger.Info("Web configuration", "env", env)
 
 	handler := NewHandler(manager, logger.With("component", "handler"), metrics)
+	apiRouter := router.PathPrefix("/api").Subrouter()
 
-	router.HandleFunc("/ping", handler.Ping).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/ping", handler.Ping).Methods(http.MethodGet)
 
-	router.HandleFunc("/dates", handler.GetDatesWithCount).Methods(http.MethodGet)
-	router.HandleFunc("/pilots", handler.GetPilots).Methods(http.MethodGet)
-	router.HandleFunc("/tracks/{date}", handler.GetTracksOfDay).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/dates", handler.GetDatesWithCount).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/pilots", handler.GetPilots).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/tracks/{date}", handler.GetTracksOfDay).Methods(http.MethodGet)
 
-	//router.Use(accessControlMiddleware)
+	// router.Use(enableCORS)
 
-	//router.PathPrefix("/").Handler(frontendHandler)
+	// router.PathPrefix("/").Handler(frontendHandler)
 	logger.Info("Livetrack web module initialized")
 	defer logger.Info("Closing...")
 

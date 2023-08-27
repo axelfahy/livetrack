@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { PUBLIC_MAPTILE_API_KEY, PUBLIC_BACKEND_ENDPOINT } from '$env/static/public';
 	import { onMount, onDestroy, afterUpdate } from 'svelte';
 	import { Map, NavigationControl, Marker, Popup } from 'maplibre-gl';
 	import distinctColors from 'distinct-colors';
@@ -7,7 +8,9 @@
 	import Legend from './Legend.svelte';
 	import { pilotsStore } from './stores';
 
-	const apiKey: string = '2eGD0NL9iHVOoN7ymayK';
+	const apiKey: string = PUBLIC_MAPTILE_API_KEY;
+    const host: string  = PUBLIC_BACKEND_ENDPOINT;
+    console.log(host);
 
 	if (!apiKey) {
 		throw new Error('You need to configure env API_KEY first, see README');
@@ -18,10 +21,11 @@
 
 	async function getTracks() {
 		try {
-			const response = await fetch('http://localhost:8080/tracks/' + selectedDate, {
+			const response = await fetch(host+"/tracks/"+selectedDate, {
 				method: 'GET',
+				credentials: 'same-origin', 
 				headers: {
-					Accept: 'application/json'
+      				'Content-Type': 'application/json',
 				}
 			});
 
@@ -37,13 +41,19 @@
 	}
 
 	async function getFetch(url: string) {
-		return await fetch(url).then((res) => {
+		return await fetch(url, {
+			method: 'GET',
+			credentials: 'same-origin', 
+			headers: {
+				'Content-Type': 'application/json',
+			}
+		}).then((res) => {
 			return res.json();
 		});
 	}
 
 	const getDatesWithCount = () => {
-		getFetch('http://localhost:8080/dates').then((res) => {
+		getFetch(host+"/dates").then((res) => {
 			dates = res['dates']
 				.filter((v) => v.slice(0, 10) != new Date().toISOString().slice(0, 10))
 				.map((v) => {

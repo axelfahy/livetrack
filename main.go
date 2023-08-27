@@ -15,7 +15,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rs/cors"
 	"github.com/sqooba/go-common/version"
 
 	"fahy.xyz/livetrack/cmd"
@@ -92,22 +91,12 @@ func main() {
 	metrics := metrics.InitPrometheus(env.MetricsNamespace, env.MetricsSubsystem)
 
 	mux := mux.NewRouter()
-	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{
-			http.MethodPost,
-			http.MethodGet,
-		},
-		//AllowedHeaders:   []string{"*"},
-		AllowedHeaders:   []string{"Accept", "Accept-Language", "Content-Type", "Content-Language", "Origin"},
-		AllowCredentials: false,
-	})
 
 	// Setup metrics endpoint
 	mux.Handle(env.MetricsPath, promhttp.Handler())
 
 	s := &http.Server{
-		Handler:      c.Handler(mux),
+		Handler:      mux,
 		Addr:         fmt.Sprint(":", env.Port),
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,

@@ -1,16 +1,18 @@
-version: '3'
+version: "3"
 
 networks:
   monitoring:
     external: true
     name: monitoring
+  web:
+    external: true
+    name: web
 
 services:
   # Postgres
   postgres:
     image: postgres:15.3
-    restart: always
-    environment: 
+    environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     logging:
@@ -18,18 +20,19 @@ services:
         max-size: 10m
         max-file: "3"
     ports:
-      - '5438:5432'
+      - "5438:5432"
+    networks:
+      - monitoring
     volumes:
       - /data/postgres_data:/var/lib/postgresql/data
       # copy the sql script to create tables
       - ./setup/init.sql:/docker-entrypoint-initdb.d/init.sql
     user: 1000:1000 # only uncomment after the database is created, with the correct uid:gid
-    networks:
-      - monitoring
+    restart: always
 
   # Fetcher
   livetrack-fetcher:
-    image: fahy.xyz/livetrack:v1.0.0
+    image: fahy.xyz/livetrack:v1.0.1
     environment:
       - PORT=9101
       - POSTGRES_HOST=postgres
@@ -50,45 +53,51 @@ services:
   livetrack-backend:
     image: fahy.xyz/livetrack:v1.0.1
     environment:
-      - PORT=8080
+      - PORT=8081
       - POSTGRES_HOST=postgres
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - METRICS_SUBSYSTEM=backend
     command: /livetrack web
+    expose:
+      - 8081
     ports:
-      - 8080:8080
+      - 8081:8081
+    networks:
+      - monitoring
+      - web
     labels:
       - "prometheus.io/scrape=true"
-      - "prometheus.io/port=8080"
+      - "prometheus.io/port=8081"
+      - "traefik.enable=true"
+      # Backend is accessible at /api/
+      - "traefik.http.routers.livetrack-backend.rule=Host(`livetrack.fahy.xyz`) && PathPrefix(`/api/`)"
+      - "traefik.http.routers.livetrack-backend.tls=true"
+      - "traefik.http.routers.livetrack-backend.entrypoints=websecure"
+      # HTTPS certificate resolver
+      - "traefik.http.routers.livetrack-backend.tls.certresolver=resolverlivetrackfahy"
     restart: unless-stopped
 
-  # Livetrack test
-  #livetrack-test:
-  #  image: fahy.xyz/livetrack:v1.0.0
-  #  environment:
-  #    - PORT=9102
-  #    - POSTGRES_HOST=postgres
-  #    - POSTGRES_USER=${POSTGRES_USER}
-  #    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  #    - ORGANIZATION=alpsfreeride
-  #    - TELEGRAM_CHANNEL=@test_tracking_go
-  #    - TELEGRAM_TOKEN=${TELEGRAM_TOKEN_TEST_TRACKING_GO}
-  #    - METRICS_SUBSYSTEM=bot
-  #  command: /livetrack bot
-  #  ports:
-  #    - 9102:9102
-  #  networks:
-  #    - monitoring
-  #  labels:
-  #    - "prometheus.io/scrape=true"
-  #    - "prometheus.io/port=9102"
-  #    - "prometheus.io/extra-labels=livetrack:@test_tracking_go"
-  #  restart: unless-stopped
+  # Frontend
+  livetrack-frontend:
+    image: fahy.xyz/livetrack-web:v1.0.0
+    environment:
+      - PUBLIC_MAPTILE_API_KEY={$MAPTILE_API_KEY}
+      - PUBLIC_BACKEND_ENDPOINT={$BACKEND_ENDPOINT}
+    networks:
+      - monitoring
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.livetrack-frontend.rule=Host(`livetrack.fahy.xyz`)"
+      - "traefik.http.routers.livetrack-frontend.tls=true"
+      # HTTPS certificate resolver
+      - "traefik.http.routers.livetrack-frontend.tls.certresolver=resolverlivetrackfahy"
+    restart: unless-stopped
 
   # Alpsfreeride
   livetrack-alpsfreeride:
-    image: fahy.xyz/livetrack:v1.0.0
+    image: fahy.xyz/livetrack:v1.0.1
     environment:
       - PORT=9103
       - POSTGRES_HOST=postgres
@@ -111,7 +120,7 @@ services:
 
   # Axlair
   livetrack-axlair:
-    image: fahy.xyz/livetrack:v1.0.0
+    image: fahy.xyz/livetrack:v1.0.1
     environment:
       - PORT=9104
       - POSTGRES_HOST=postgres
@@ -134,7 +143,7 @@ services:
 
   # Followus
   livetrack-followus:
-    image: fahy.xyz/livetrack:v1.0.0
+    image: fahy.xyz/livetrack:v1.0.1
     environment:
       - PORT=9105
       - POSTGRES_HOST=postgres

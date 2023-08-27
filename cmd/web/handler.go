@@ -21,8 +21,7 @@ type Handler struct {
 	metrics handlerMetrics
 }
 
-type handlerMetrics interface {
-}
+type handlerMetrics interface{}
 
 type emptyHandlerMetrics struct{}
 
@@ -49,11 +48,11 @@ func (h *Handler) GetDatesWithCount(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-type", "application/json")
 	if err := json.NewEncoder(w).Encode(
-		struct{
-			Dates []time.Time `json:"dates"`
-			Counts []int `json:"counts"`
+		struct {
+			Dates  []time.Time `json:"dates"`
+			Counts []int       `json:"counts"`
 		}{
-			Dates: dates,
+			Dates:  dates,
 			Counts: counts,
 		}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -90,4 +89,3 @@ func (h *Handler) GetTracksOfDay(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
-
