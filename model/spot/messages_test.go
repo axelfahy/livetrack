@@ -1,18 +1,21 @@
-package spot
+package spot_test
 
 import (
 	"os"
 	"testing"
 	"time"
 
+	"fahy.xyz/livetrack/model/spot"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMessagesToPoint(t *testing.T) {
+	t.Parallel()
+
 	content, err := os.ReadFile("testdata/response_full.json")
 	assert.Nil(t, err)
 
-	response, err := Parse(content)
+	response, err := spot.Parse(content)
 	assert.Nil(t, err)
 
 	points, err := response.ToPoints()
@@ -27,10 +30,12 @@ func TestMessagesToPoint(t *testing.T) {
 }
 
 func TestMessageSingleParse(t *testing.T) {
+	t.Parallel()
+
 	content, err := os.ReadFile("testdata/response_single_msg.json")
 	assert.Nil(t, err)
 
-	response, err := Parse(content)
+	response, err := spot.Parse(content)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "abc", response.FeedMessageResponse.Feed.Name)
@@ -38,10 +43,12 @@ func TestMessageSingleParse(t *testing.T) {
 }
 
 func TestMessagesParse(t *testing.T) {
+	t.Parallel()
+
 	content, err := os.ReadFile("testdata/response_full.json")
 	assert.Nil(t, err)
 
-	response, err := Parse(content)
+	response, err := spot.Parse(content)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "NEW PILOT", response.FeedMessageResponse.Feed.Name)

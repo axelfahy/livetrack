@@ -32,7 +32,7 @@ services:
 
   # Fetcher
   livetrack-fetcher:
-    image: fahy.xyz/livetrack:v1.1.0
+    image: fahy.xyz/livetrack:v1.1.1
     environment:
       - PORT=9101
       - POSTGRES_HOST=postgres
@@ -51,7 +51,7 @@ services:
 
   # Backend
   livetrack-backend:
-    image: fahy.xyz/livetrack:v1.1.0
+    image: fahy.xyz/livetrack:v1.1.1
     environment:
       - PORT=8081
       - POSTGRES_HOST=postgres
@@ -120,7 +120,7 @@ services:
 
   # Alpsfreeride
   livetrack-alpsfreeride:
-    image: fahy.xyz/livetrack:v1.1.0
+    image: fahy.xyz/livetrack:v1.1.1
     environment:
       - PORT=9103
       - POSTGRES_HOST=postgres
@@ -143,7 +143,7 @@ services:
 
   # Axlair
   livetrack-axlair:
-    image: fahy.xyz/livetrack:v1.1.0
+    image: fahy.xyz/livetrack:v1.1.1
     environment:
       - PORT=9104
       - POSTGRES_HOST=postgres
@@ -166,7 +166,7 @@ services:
 
   # Followus
   livetrack-followus:
-    image: fahy.xyz/livetrack:v1.1.0
+    image: fahy.xyz/livetrack:v1.1.1
     environment:
       - PORT=9105
       - POSTGRES_HOST=postgres
@@ -186,4 +186,3 @@ services:
       - "prometheus.io/port=9105"
       - "prometheus.io/extra-labels=livetrack:@followus"
     restart: unless-stopped
-

@@ -17,62 +17,62 @@ type Metrics struct {
 	msgBotRemovedCounter prometheus.Counter
 }
 
-func InitPrometheus(ns, subsys string) *Metrics {
-	m := &Metrics{}
+func InitPrometheus(namespace, subsys string) *Metrics {
+	metric := &Metrics{}
 
-	m.msgFetchedCounter = promauto.NewCounterVec(prometheus.CounterOpts{
+	metric.msgFetchedCounter = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name:      "msgs_fetched_count",
 		Help:      "Number of messages fetched from trackers by source",
-		Namespace: ns,
+		Namespace: namespace,
 		Subsystem: subsys,
 	}, []string{"source"})
 
-	m.pilotRetrievedCounter = promauto.NewCounter(prometheus.CounterOpts{
+	metric.pilotRetrievedCounter = promauto.NewCounter(prometheus.CounterOpts{
 		Name:      "pilots_retrieved_count",
 		Help:      "Number of calls to retrieve pilots from the database",
-		Namespace: ns,
+		Namespace: namespace,
 		Subsystem: subsys,
 	})
 
-	m.trackRetrievedCounter = promauto.NewCounter(prometheus.CounterOpts{
+	metric.trackRetrievedCounter = promauto.NewCounter(prometheus.CounterOpts{
 		Name:      "tracks_retrieved_count",
 		Help:      "Number of calls to retrieve tracks from the database",
-		Namespace: ns,
+		Namespace: namespace,
 		Subsystem: subsys,
 	})
 
-	m.trackWrittenCounter = promauto.NewCounter(prometheus.CounterOpts{
+	metric.trackWrittenCounter = promauto.NewCounter(prometheus.CounterOpts{
 		Name:      "tracks_written_count",
 		Help:      "Number of tracks written to the database",
-		Namespace: ns,
+		Namespace: namespace,
 		Subsystem: subsys,
 	})
 
-	m.msgBotSentCounter = promauto.NewCounter(prometheus.CounterOpts{
+	metric.msgBotSentCounter = promauto.NewCounter(prometheus.CounterOpts{
 		Name:      "msgs_bot_sent_count",
 		Help:      "Number of messages sent to telegram",
-		Namespace: ns,
+		Namespace: namespace,
 		Subsystem: subsys,
 	})
 
-	m.msgBotRemovedCounter = promauto.NewCounter(prometheus.CounterOpts{
+	metric.msgBotRemovedCounter = promauto.NewCounter(prometheus.CounterOpts{
 		Name:      "msgs_bot_removed_count",
 		Help:      "Number of messages removed from telegram",
-		Namespace: ns,
+		Namespace: namespace,
 		Subsystem: subsys,
 	})
 
-	return m
+	return metric
 }
 
-// Fetcher metrics
+// Fetcher metrics.
 func (m *Metrics) MessageFetchedInc(source string) { m.msgFetchedCounter.WithLabelValues(source).Inc() }
 
-// Database manager
+// Database manager.
 func (m *Metrics) PilotRetrievedInc() { m.pilotRetrievedCounter.Inc() }
 func (m *Metrics) TrackRetrievedInc() { m.trackRetrievedCounter.Inc() }
 func (m *Metrics) TrackWrittenInc()   { m.trackWrittenCounter.Inc() }
 
-// Telegram bot metrics
+// Telegram bot metrics.
 func (m *Metrics) MessageSentInc()    { m.msgBotSentCounter.Inc() }
 func (m *Metrics) MessageRemovedInc() { m.msgBotRemovedCounter.Inc() }

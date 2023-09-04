@@ -90,15 +90,15 @@ func Main(ctx context.Context) {
 
 			switch pilot.TrackerType {
 			case garminTracker:
-				points, err = garminFetcher.Fetch(pilot.Id)
+				points, err = garminFetcher.Fetch(pilot.ID)
 				if err != nil {
-					logger.Error("Error retrieving tracker for garmin", "id", pilot.Id, "error", err)
+					logger.Error("Error retrieving tracker for garmin", "ID", pilot.ID, "error", err)
 					continue
 				}
 			case spotTracker:
-				points, err = spotFetcher.Fetch(pilot.Id)
+				points, err = spotFetcher.Fetch(pilot.ID)
 				if err != nil {
-					logger.Error("Error retrieving tracker for spot", "id", pilot.Id, "error", err)
+					logger.Error("Error retrieving tracker for spot", "ID", pilot.ID, "error", err)
 					continue
 				}
 			default:
@@ -108,8 +108,8 @@ func Main(ctx context.Context) {
 			logger.Debug("Fetched", "points", points)
 
 			if len(points) > 0 {
-				if err = manager.WriteTrack(ctx, pilot.Id, points); err != nil {
-					logger.Error("Error writing track", "id", pilot.Id, "track", points, "error", err)
+				if err = manager.WriteTrack(ctx, pilot.ID, points); err != nil {
+					logger.Error("Error writing track", "ID", pilot.ID, "track", points, "error", err)
 				}
 			}
 			time.Sleep(5 * time.Second)
