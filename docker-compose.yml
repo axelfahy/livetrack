@@ -32,7 +32,7 @@ services:
 
   # Fetcher
   livetrack-fetcher:
-    image: fahy.xyz/livetrack:v1.0.1
+    image: fahy.xyz/livetrack:v1.1.0
     environment:
       - PORT=9101
       - POSTGRES_HOST=postgres
@@ -51,7 +51,7 @@ services:
 
   # Backend
   livetrack-backend:
-    image: fahy.xyz/livetrack:v1.0.1
+    image: fahy.xyz/livetrack:v1.1.0
     environment:
       - PORT=8081
       - POSTGRES_HOST=postgres
@@ -80,7 +80,7 @@ services:
 
   # Frontend
   livetrack-frontend:
-    image: fahy.xyz/livetrack-web:v1.0.0
+    image: fahy.xyz/livetrack-web:v0.0.1-rc7
     environment:
       - PUBLIC_MAPTILE_API_KEY={$MAPTILE_API_KEY}
       - PUBLIC_BACKEND_ENDPOINT={$BACKEND_ENDPOINT}
@@ -95,9 +95,32 @@ services:
       - "traefik.http.routers.livetrack-frontend.tls.certresolver=resolverlivetrackfahy"
     restart: unless-stopped
 
+  # Livetrack test
+  #livetrack-test:
+  #  image: fahy.xyz/livetrack:v1.1.0
+  #  environment:
+  #    - PORT=9102
+  #    - POSTGRES_HOST=postgres
+  #    - POSTGRES_USER=${POSTGRES_USER}
+  #    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  #    - ORGANIZATION=alpsfreeride
+  #    - TELEGRAM_CHANNEL=@test_tracking_go
+  #    - TELEGRAM_TOKEN=${TELEGRAM_TOKEN_TEST_TRACKING_GO}
+  #    - METRICS_SUBSYSTEM=bot
+  #  command: /livetrack bot
+  #  ports:
+  #    - 9102:9102
+  #  networks:
+  #    - monitoring
+  #  labels:
+  #    - "prometheus.io/scrape=true"
+  #    - "prometheus.io/port=9102"
+  #    - "prometheus.io/extra-labels=livetrack:@test_tracking_go"
+  #  restart: unless-stopped
+
   # Alpsfreeride
   livetrack-alpsfreeride:
-    image: fahy.xyz/livetrack:v1.0.1
+    image: fahy.xyz/livetrack:v1.1.0
     environment:
       - PORT=9103
       - POSTGRES_HOST=postgres
@@ -120,7 +143,7 @@ services:
 
   # Axlair
   livetrack-axlair:
-    image: fahy.xyz/livetrack:v1.0.1
+    image: fahy.xyz/livetrack:v1.1.0
     environment:
       - PORT=9104
       - POSTGRES_HOST=postgres
@@ -143,7 +166,7 @@ services:
 
   # Followus
   livetrack-followus:
-    image: fahy.xyz/livetrack:v1.0.1
+    image: fahy.xyz/livetrack:v1.1.0
     environment:
       - PORT=9105
       - POSTGRES_HOST=postgres
@@ -163,3 +186,4 @@ services:
       - "prometheus.io/port=9105"
       - "prometheus.io/extra-labels=livetrack:@followus"
     restart: unless-stopped
+

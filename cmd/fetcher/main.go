@@ -12,14 +12,21 @@ import (
 	"fahy.xyz/livetrack/db"
 	"fahy.xyz/livetrack/fetcher"
 	"fahy.xyz/livetrack/metrics"
+	"fahy.xyz/livetrack/model"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/procyon-projects/chrono"
 )
 
+const (
+	garminTracker = "garmin"
+	spotTracker   = "spot"
+)
+
 type fetcherEnvConfig struct {
 	// Fetchers
-	SpotBaseUrl string `envconfig:"SPOT_BASE_URL" default:"https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"`
+	SpotBaseUrl   string `envconfig:"SPOT_BASE_URL" default:"https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"`
+	GarminBaseUrl string `envconfig:"GARMIN_BASE_URL" default:"https://share.garmin.com/Feed/Share/"`
 	// Behaviour settings
 	FetchInterval time.Duration `envconfig:"FETCH_INTERVAL" default:"4m"`
 }
@@ -61,6 +68,7 @@ func Main(ctx context.Context) {
 	signal.Notify(shutdownChan, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(shutdownChan)
 
+	garminFetcher := fetcher.NewGarminFetcher(env.GarminBaseUrl, logger.With("component", "garmin-fetcher"), metrics)
 	spotFetcher := fetcher.NewSpotFetcher(env.SpotBaseUrl, logger.With("component", "spot-fetcher"), metrics)
 
 	taskScheduler := chrono.NewDefaultTaskScheduler()
@@ -78,10 +86,24 @@ func Main(ctx context.Context) {
 	_, err = taskScheduler.ScheduleWithFixedDelay(func(ctx context.Context) {
 		logger.Info("Fetching tracker sources", "time", time.Now())
 		for _, pilot := range pilots {
-			points, err := spotFetcher.Fetch(pilot.Id)
-			if err != nil {
-				logger.Error("Error retrieving tracker for spot", "id", pilot.Id, "error", err)
-				return
+			var points []model.Point
+
+			switch pilot.TrackerType {
+			case garminTracker:
+				points, err = garminFetcher.Fetch(pilot.Id)
+				if err != nil {
+					logger.Error("Error retrieving tracker for garmin", "id", pilot.Id, "error", err)
+					continue
+				}
+			case spotTracker:
+				points, err = spotFetcher.Fetch(pilot.Id)
+				if err != nil {
+					logger.Error("Error retrieving tracker for spot", "id", pilot.Id, "error", err)
+					continue
+				}
+			default:
+				logger.Error("Unknown tracker", "pilot", pilot)
+				continue
 			}
 			logger.Debug("Fetched", "points", points)
 
@@ -90,6 +112,7 @@ func Main(ctx context.Context) {
 					logger.Error("Error writing track", "id", pilot.Id, "track", points, "error", err)
 				}
 			}
+			time.Sleep(5 * time.Second)
 		}
 	}, env.FetchInterval)
 

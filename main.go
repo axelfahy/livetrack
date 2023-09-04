@@ -35,8 +35,8 @@ type mainEnvConfig struct {
 	PostgresHost     string `envconfig:"POSTGRES_HOST" default:"localhost"`
 	PostgresPort     int    `envconfig:"POSTGRES_PORT" default:"5432"`
 	PostgresDBName   string `envconfig:"POSTGRES_DB_NAME" default:"tracking"`
-	PostgresUser     string `envconfig:"POSTGRES_User" required:"true"`
-	PostgresPassword string `envconfig:"POSTGRES_User" required:"true"`
+	PostgresUser     string `envconfig:"POSTGRES_USER" required:"true"`
+	PostgresPassword string `envconfig:"POSTGRES_PASSWORD" required:"true"`
 
 	// Metrics settings
 	MetricsNamespace string `envconfig:"METRICS_NAMESPACE" default:"livetrack"`

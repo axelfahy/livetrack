@@ -27,4 +27,3 @@ CREATE TABLE IF NOT EXISTS track (
 INSERT INTO pilot(id, name, home, orgs, tracker_type)
 VALUES
   ('id', 'Pilot name', 'home', '{"org1", "org2"}', 'spot');
-
