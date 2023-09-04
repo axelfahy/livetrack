@@ -1,4 +1,5 @@
-VERSION=v1.0.0
+VERSION=v1.0.1-rc2
+VERSION_FRONTEND=v0.0.1-rc7
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
@@ -13,6 +14,7 @@ GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 BUILD_DATE=$(shell date '+%Y-%m-%d-%H:%M:%S')
 # Image name
 GO_PACKAGE=fahy.xyz/livetrack
+FRONTEND_PACKAGE=fahy.xyz/livetrack-web
 
 all: ensure package 
 
@@ -37,6 +39,12 @@ package:
 		-t $(GO_PACKAGE):$(VERSION_MAJOR) \
 		--load \
 		.
+
+frontend:
+	docker buildx build -f web/frontend/Dockerfile \
+		-t $(FRONTEND_PACKAGE):$(VERSION_FRONTEND) \
+		--load \
+		web/frontend/
 
 test:
 	$(GOTEST) ./...
