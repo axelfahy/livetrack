@@ -1,0 +1,2799 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<kml xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>KML Export 9/2/2023 3:07:28 PM</name>
+    <Style id="style_emergency">
+      <IconStyle>
+        <colorMode>normal</colorMode>
+        <Icon>
+          <href>http://maps.google.com/mapfiles/kml/shapes/caution.png</href>
+        </Icon>
+      </IconStyle>
+      <BalloonStyle>
+        <text>&lt;table&gt;&lt;tr&gt;&lt;td&gt;Id&lt;/td&gt;&lt;td&gt; $[Id] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Time&lt;/td&gt;&lt;td&gt; $[Time] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Time UTC&lt;/td&gt;&lt;td&gt; $[Time UTC] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td&gt; $[Name] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Map Display Name&lt;/td&gt;&lt;td&gt; $[Map Display Name] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Device Type&lt;/td&gt;&lt;td&gt; $[Device Type] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;IMEI&lt;/td&gt;&lt;td&gt; $[IMEI] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Incident Id&lt;/td&gt;&lt;td&gt; $[Incident Id] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Latitude&lt;/td&gt;&lt;td&gt; $[Latitude] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Longitude&lt;/td&gt;&lt;td&gt; $[Longitude] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Elevation&lt;/td&gt;&lt;td&gt; $[Elevation] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Velocity&lt;/td&gt;&lt;td&gt; $[Velocity] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Course&lt;/td&gt;&lt;td&gt; $[Course] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Valid GPS Fix&lt;/td&gt;&lt;td&gt; $[Valid GPS Fix] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;In Emergency&lt;/td&gt;&lt;td&gt; $[In Emergency] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Text&lt;/td&gt;&lt;td&gt; $[Text] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Event&lt;/td&gt;&lt;td&gt; $[Event] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Device Identifier&lt;/td&gt;&lt;td&gt; $[Device Identifier] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;SpatialRefSystem&lt;/td&gt;&lt;td&gt; $[SpatialRefSystem] &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</text>
+      </BalloonStyle>
+    </Style>
+    <Style id="style_1385940">
+      <IconStyle>
+        <color>ffff5500</color>
+        <colorMode>normal</colorMode>
+        <Icon>
+          <href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href>
+        </Icon>
+      </IconStyle>
+      <BalloonStyle>
+        <text>&lt;table&gt;&lt;tr&gt;&lt;td&gt;Id&lt;/td&gt;&lt;td&gt; $[Id] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Time&lt;/td&gt;&lt;td&gt; $[Time] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Time UTC&lt;/td&gt;&lt;td&gt; $[Time UTC] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td&gt; $[Name] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Map Display Name&lt;/td&gt;&lt;td&gt; $[Map Display Name] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Device Type&lt;/td&gt;&lt;td&gt; $[Device Type] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;IMEI&lt;/td&gt;&lt;td&gt; $[IMEI] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Incident Id&lt;/td&gt;&lt;td&gt; $[Incident Id] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Latitude&lt;/td&gt;&lt;td&gt; $[Latitude] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Longitude&lt;/td&gt;&lt;td&gt; $[Longitude] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Elevation&lt;/td&gt;&lt;td&gt; $[Elevation] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Velocity&lt;/td&gt;&lt;td&gt; $[Velocity] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Course&lt;/td&gt;&lt;td&gt; $[Course] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Valid GPS Fix&lt;/td&gt;&lt;td&gt; $[Valid GPS Fix] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;In Emergency&lt;/td&gt;&lt;td&gt; $[In Emergency] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Text&lt;/td&gt;&lt;td&gt; $[Text] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Event&lt;/td&gt;&lt;td&gt; $[Event] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Device Identifier&lt;/td&gt;&lt;td&gt; $[Device Identifier] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;SpatialRefSystem&lt;/td&gt;&lt;td&gt; $[SpatialRefSystem] &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</text>
+      </BalloonStyle>
+    </Style>
+    <Style id="waypointstyle_1385940">
+      <IconStyle>
+        <color>ffff5500</color>
+        <colorMode>normal</colorMode>
+        <Icon>
+          <href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href>
+        </Icon>
+      </IconStyle>
+      <BalloonStyle>
+        <text>&lt;table&gt;&lt;tr&gt;&lt;td&gt;Time&lt;/td&gt;&lt;td&gt; $[Time] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Time UTC&lt;/td&gt;&lt;td&gt; $[Time UTC] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Latitude&lt;/td&gt;&lt;td&gt; $[Latitude] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Longitude&lt;/td&gt;&lt;td&gt; $[Longitude] &lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Text&lt;/td&gt;&lt;td&gt; $[Text] &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</text>
+      </BalloonStyle>
+    </Style>
+    <Style id="linestyle_1385940">
+      <LineStyle>
+        <color>ffff5500</color>
+        <colorMode>normal</colorMode>
+        <width>1</width>
+        <labelVisibility xmlns="http://www.google.com/kml/ext/2.2">false</labelVisibility>
+      </LineStyle>
+    </Style>
+    <Folder>
+      <name>Pilot A</name>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T10:16:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89026540</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 10:16:45 AM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 12:16:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.625150</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.206130</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1603.74 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>0.0 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>112.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking turned on from device.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.20613,46.62515,1603.74</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T10:26:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89027790</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 10:26:45 AM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 12:26:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.625150</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.206108</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1608.61 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>0.0 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>0.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking interval received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.206108,46.62515,1608.61</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T10:36:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89029086</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 10:36:45 AM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 12:36:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.629323</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.194435</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1497.51 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>28.9 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>247.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking interval received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.194435,46.629323,1497.51</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T10:46:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89030324</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 10:46:45 AM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 12:46:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.631180</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.201388</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1540.76 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>44.7 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>157.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.201388,46.63118,1540.76</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T10:56:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89031615</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 10:56:45 AM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 12:56:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.630933</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.200508</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1567.34 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>52.2 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>67.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking interval received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.200508,46.630933,1567.34</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T11:07:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89032639</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 11:07:00 AM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 1:07:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.625225</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.203211</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1581.87 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>37.8 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>180.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking interval received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.203211,46.625225,1581.87</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T11:17:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89033989</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 11:17:00 AM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 1:17:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.629710</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.189628</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1637.89 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>47.6 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>0.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.189628,46.62971,1637.89</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T11:27:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89035361</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 11:27:00 AM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 1:27:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.624313</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.224905</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2162.09 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>37.8 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>180.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.224905,46.624313,2162.09</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T11:37:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89036385</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 11:37:00 AM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 1:37:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.638346</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.297690</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2331.20 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>40.5 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>45.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.29769,46.638346,2331.2</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T11:47:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89037407</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 11:47:00 AM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 1:47:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.665340</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.369508</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2212.63 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>53.8 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>45.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.369508,46.66534,2212.63</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T11:57:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89039421</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 11:57:00 AM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 1:57:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.686155</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.403540</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2017.96 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>25.3 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>337.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.40354,46.686155,2017.96</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T12:07:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89040641</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 12:07:00 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 2:07:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.704275</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.433560</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2117.20 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>52.2 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>135.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.43356,46.704275,2117.2</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T12:17:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89041798</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 12:17:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 2:17:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.707151</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.499585</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1956.06 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>39.1 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>67.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.499585,46.707151,1956.06</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T12:27:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89042975</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 12:27:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 2:27:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.705488</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.525355</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1971.48 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>28.9 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>22.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.525355,46.705488,1971.48</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T12:37:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89044074</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 12:37:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 2:37:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.690468</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.574493</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1726.54 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>41.9 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>112.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.574493,46.690468,1726.54</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T12:47:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89045211</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 12:47:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 2:47:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.692205</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.570030</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1783.79 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>37.8 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>112.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.57003,46.692205,1783.79</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T12:57:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89046902</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 12:57:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 2:57:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.695563</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.560053</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1716.63 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>43.3 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>292.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.560053,46.695563,1716.63</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T13:07:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89047948</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 1:07:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 3:07:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.708846</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.522245</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1633.00 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>43.3 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>67.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.522245,46.708846,1633</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T13:17:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89048732</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 1:17:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 3:17:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.706603</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.499135</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1992.10 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>39.1 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>202.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.499135,46.706603,1992.1</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T13:27:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89049547</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 1:27:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 3:27:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.705991</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.452743</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2114.57 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>37.8 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>67.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.452743,46.705991,2114.57</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T13:37:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89050594</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 1:37:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 3:37:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.688065</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.460983</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2090.94 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>35.2 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>180.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.460983,46.688065,2090.94</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T13:47:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89051637</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 1:47:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 3:47:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.654280</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.484050</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2231.35 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>44.7 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>157.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.48405,46.65428,2231.35</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T13:57:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89052711</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 1:57:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 3:57:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.628916</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.494200</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2374.86 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>36.5 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>247.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.4942,46.628916,2374.86</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T14:08:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89053844</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 2:08:00 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 4:08:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.586891</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.514348</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2680.34 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>50.7 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>135.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.514348,46.586891,2680.34</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T14:18:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89054941</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 2:18:00 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 4:18:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.551733</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.547156</value>
+          </Data>
+          <Data name="Elevation">
+            <value>3070.30 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>37.8 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>315.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.547156,46.551733,3070.3</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T14:28:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89055973</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 2:28:00 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 4:28:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.498390</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.502460</value>
+          </Data>
+          <Data name="Elevation">
+            <value>3030.87 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>49.1 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>202.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.50246,46.49839,3030.87</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T14:38:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89057054</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 2:38:00 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 4:38:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.442900</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.509326</value>
+          </Data>
+          <Data name="Elevation">
+            <value>3439.04 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>39.1 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>157.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.509326,46.4429,3439.04</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T14:48:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89058095</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 2:48:00 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 4:48:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.393933</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.505271</value>
+          </Data>
+          <Data name="Elevation">
+            <value>3555.57 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>43.3 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>90.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.505271,46.393933,3555.57</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T14:58:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89059167</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 2:58:00 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 4:58:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.383836</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.426415</value>
+          </Data>
+          <Data name="Elevation">
+            <value>3378.32 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>40.5 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>225.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.426415,46.383836,3378.32</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T15:08:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89060152</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 3:08:00 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 5:08:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.373826</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.357041</value>
+          </Data>
+          <Data name="Elevation">
+            <value>3384.69 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>41.9 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>292.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.357041,46.373826,3384.69</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T15:18:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89061111</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 3:18:00 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 5:18:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.409211</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.303848</value>
+          </Data>
+          <Data name="Elevation">
+            <value>3009.73 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>41.9 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>337.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.303848,46.409211,3009.73</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T15:28:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89062019</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 3:28:00 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 5:28:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.424521</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.235355</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2263.56 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>17.5 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>315.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.235355,46.424521,2263.56</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T15:38:00Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89062966</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 3:38:00 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 5:38:00 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.417708</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.208190</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2446.44 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>30.1 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>315.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.20819,46.417708,2446.44</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T15:48:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89063980</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 3:48:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 5:48:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.453296</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.190960</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2583.52 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>32.6 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>337.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.19096,46.453296,2583.52</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T15:58:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89064822</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 3:58:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 5:58:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.480943</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.199800</value>
+          </Data>
+          <Data name="Elevation">
+            <value>2720.63 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>50.7 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>0.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.1998,46.480943,2720.63</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name />
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T16:08:45Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89065690</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 4:08:45 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 6:08:45 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.528183</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.213576</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1902.38 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>67.4 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>157.50 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.213576,46.528183,1902.38</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Pilot A</name>
+        <visibility>true</visibility>
+        <description />
+        <TimeStamp>
+          <when>2023-08-23T16:19:15Z</when>
+        </TimeStamp>
+        <styleUrl>#style_1385940</styleUrl>
+        <ExtendedData>
+          <Data name="Id">
+            <value>89066602</value>
+          </Data>
+          <Data name="Time UTC">
+            <value>8/23/2023 4:19:15 PM</value>
+          </Data>
+          <Data name="Time">
+            <value>8/23/2023 6:19:15 PM</value>
+          </Data>
+          <Data name="Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Map Display Name">
+            <value>Pilot A</value>
+          </Data>
+          <Data name="Device Type">
+            <value>inReach Mini</value>
+          </Data>
+          <Data name="IMEI">
+            <value>300434032535370</value>
+          </Data>
+          <Data name="Incident Id">
+            <value />
+          </Data>
+          <Data name="Latitude">
+            <value>46.490406</value>
+          </Data>
+          <Data name="Longitude">
+            <value>7.205680</value>
+          </Data>
+          <Data name="Elevation">
+            <value>1301.51 m from MSL</value>
+          </Data>
+          <Data name="Velocity">
+            <value>9.1 km/h</value>
+          </Data>
+          <Data name="Course">
+            <value>45.00 ° True</value>
+          </Data>
+          <Data name="Valid GPS Fix">
+            <value>True</value>
+          </Data>
+          <Data name="In Emergency">
+            <value>False</value>
+          </Data>
+          <Data name="Text">
+            <value />
+          </Data>
+          <Data name="Event">
+            <value>Tracking message received.</value>
+          </Data>
+          <Data name="Device Identifier">
+            <value />
+          </Data>
+          <Data name="SpatialRefSystem">
+            <value>WGS84</value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <extrude>false</extrude>
+          <altitudeMode>absolute</altitudeMode>
+          <coordinates>7.20568,46.490406,1301.51</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Pilot A</name>
+        <visibility>true</visibility>
+        <description>Pilot A's track log</description>
+        <styleUrl>#linestyle_1385940</styleUrl>
+        <LineString>
+          <tessellate>true</tessellate>
+          <coordinates>7.20613,46.62515,1603.74
+7.206108,46.62515,1608.61
+7.194435,46.629323,1497.51
+7.201388,46.63118,1540.76
+7.200508,46.630933,1567.34
+7.203211,46.625225,1581.87
+7.189628,46.62971,1637.89
+7.224905,46.624313,2162.09
+7.29769,46.638346,2331.2
+7.369508,46.66534,2212.63
+7.40354,46.686155,2017.96
+7.43356,46.704275,2117.2
+7.499585,46.707151,1956.06
+7.525355,46.705488,1971.48
+7.574493,46.690468,1726.54
+7.57003,46.692205,1783.79
+7.560053,46.695563,1716.63
+7.522245,46.708846,1633
+7.499135,46.706603,1992.1
+7.452743,46.705991,2114.57
+7.460983,46.688065,2090.94
+7.48405,46.65428,2231.35
+7.4942,46.628916,2374.86
+7.514348,46.586891,2680.34
+7.547156,46.551733,3070.3
+7.50246,46.49839,3030.87
+7.509326,46.4429,3439.04
+7.505271,46.393933,3555.57
+7.426415,46.383836,3378.32
+7.357041,46.373826,3384.69
+7.303848,46.409211,3009.73
+7.235355,46.424521,2263.56
+7.20819,46.417708,2446.44
+7.19096,46.453296,2583.52
+7.1998,46.480943,2720.63
+7.213576,46.528183,1902.38
+7.20568,46.490406,1301.51</coordinates>
+        </LineString>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>
