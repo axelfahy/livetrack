@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sqooba/go-common/version"
@@ -19,6 +20,7 @@ import (
 	"fahy.xyz/livetrack/cmd"
 	telegrambot "fahy.xyz/livetrack/cmd/bot"
 	fetcher "fahy.xyz/livetrack/cmd/fetcher"
+	"fahy.xyz/livetrack/cmd/web"
 	"fahy.xyz/livetrack/db"
 	"fahy.xyz/livetrack/metrics"
 )
@@ -88,12 +90,17 @@ func main() {
 
 	metrics := metrics.InitPrometheus(env.MetricsNamespace, env.MetricsSubsystem)
 
-	mux := http.NewServeMux()
+	mux := mux.NewRouter()
 
 	// Setup metrics endpoint
 	mux.Handle(env.MetricsPath, promhttp.Handler())
 
-	s := http.Server{Addr: fmt.Sprint(":", env.Port), Handler: mux}
+	s := &http.Server{
+		Handler:      mux,
+		Addr:         fmt.Sprint(":", env.Port),
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
 	go func() {
 		logger.Error("listen and serve", s.ListenAndServe())
 		return
@@ -129,6 +136,8 @@ func main() {
 		telegrambot.Main(ctx)
 	case "fetcher":
 		fetcher.Main(ctx)
+	case "web":
+		web.Main(ctx)
 	default:
 		logger.Error("invalid command", "command", command)
 		return
