@@ -12,8 +12,6 @@ import (
 	"fahy.xyz/livetrack/model/spot"
 )
 
-const source = "spot"
-
 type SpotFetcher struct {
 	client  *http.Client
 	url     string
@@ -62,6 +60,6 @@ func (f *SpotFetcher) Fetch(id string) ([]model.Point, error) {
 	if err != nil {
 		return nil, err
 	}
-	f.metrics.MessageFetchedInc(source)
+	f.metrics.MessageFetchedInc("spot")
 	return points, nil
 }
