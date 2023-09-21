@@ -1,4 +1,4 @@
-VERSION=v1.1.0
+VERSION=v1.1.1
 VERSION_FRONTEND=v0.0.1-rc7
 GOCMD=go
 GOBUILD=$(GOCMD) build
@@ -16,7 +16,7 @@ BUILD_DATE=$(shell date '+%Y-%m-%d-%H:%M:%S')
 GO_PACKAGE=fahy.xyz/livetrack
 FRONTEND_PACKAGE=fahy.xyz/livetrack-web
 
-all: ensure package 
+all: ensure package
 
 ensure:
 	env GOOS=linux $(GOCMD) mod download

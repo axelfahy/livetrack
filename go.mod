@@ -3,6 +3,7 @@ module fahy.xyz/livetrack
 go 1.21
 
 require (
+	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.10.9
@@ -33,7 +34,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
@@ -52,7 +52,6 @@ require (
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
-	github.com/rs/cors v1.9.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

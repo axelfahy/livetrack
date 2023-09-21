@@ -28,27 +28,33 @@ type Data struct {
 
 func (r *Document) ToPoints() ([]model.Point, error) {
 	points := []model.Point{}
+
 	for _, placemark := range r.Placemarks {
 		// Last placemark does not have points, skip it.
 		if len(placemark.Data) == 0 {
 			continue
 		}
+
 		dateTime, err := time.Parse("1/2/2006 3:04:05 PM", placemark.getField("Time UTC"))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error parsing date %s: %w", placemark.getField("Time UTC"), err)
 		}
+
 		latitude, err := strconv.ParseFloat(placemark.getField("Latitude"), 64)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing latitude %s: %w", placemark.getField("Latitude"), err)
 		}
+
 		longitude, err := strconv.ParseFloat(placemark.getField("Longitude"), 64)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing longitude %s: %w", placemark.getField("Longitude"), err)
 		}
+
 		elevation, err := strconv.Atoi(strings.Split(placemark.getField("Elevation"), ".")[0])
 		if err != nil {
 			return nil, fmt.Errorf("error parsing altitude %s: %w", placemark.getField("Elevation"), err)
 		}
+
 		points = append(points, model.Point{
 			DateTime:   dateTime,
 			Latitude:   latitude,
@@ -58,6 +64,7 @@ func (r *Document) ToPoints() ([]model.Point, error) {
 			MsgContent: placemark.getField("Text"),
 		})
 	}
+
 	return points, nil
 }
 
@@ -67,13 +74,15 @@ func (p *Placemark) getField(field string) string {
 			return d.Value
 		}
 	}
+
 	return ""
 }
 
 func Parse(content []byte) (Document, error) {
 	var document Document
 	if err := xml.Unmarshal(content, &document); err != nil {
-		return Document{}, err
+		return Document{}, fmt.Errorf("error parsing message %s: %w", string(content), err)
 	}
+
 	return document, nil
 }

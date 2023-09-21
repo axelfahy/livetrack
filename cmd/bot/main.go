@@ -96,7 +96,7 @@ func Main(ctx context.Context) {
 				since = pilots[i].Points[len(pilots[i].Points)-1].DateTime
 			}
 			logger.Info("Retrieving", "pilot", pilots[i], "since", since)
-			points, err := manager.GetTrackSince(ctx, pilots[i].Id, since)
+			points, err := manager.GetTrackSince(ctx, pilots[i].ID, since)
 			if err != nil {
 				logger.Error("Error retrieving track for pilot", "pilot", pilots[i], "error", err)
 				return
@@ -138,7 +138,7 @@ func Main(ctx context.Context) {
 						pilots[i].GetFlightTime(),
 						pilots[i].GetCumulativeDistance(),
 						pilots[i].GetTakeOffDistance(),
-						point.GetItineraryUrl(),
+						point.GetItineraryURL(),
 						sbbItinerary,
 					)
 				case "HELP", "MOVE", "CUSTOM":

@@ -26,8 +26,9 @@ func (p *Point) Value() (driver.Value, error) {
 	return fmt.Sprintf("(%f,%f,%d,%s,%s)", p.Latitude, p.Longitude, p.Altitude, p.MsgType, p.MsgContent), nil
 }
 
-func (p *Point) GetItineraryUrl() string {
-	baseUrl := "https://www.google.com/maps/dir/?api=1&destination="
+func (p *Point) GetItineraryURL() string {
+	baseURL := "https://www.google.com/maps/dir/?api=1&destination="
 	linkName := "[Pick Me]"
-	return fmt.Sprintf("%s(%s%f,%f&travelmode=driving)", linkName, baseUrl, p.Latitude, p.Longitude)
+
+	return fmt.Sprintf("%s(%s%f,%f&travelmode=driving)", linkName, baseURL, p.Latitude, p.Longitude)
 }

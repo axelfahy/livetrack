@@ -9,7 +9,10 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/lib/pq"
 )
+
+const errDuplicateKey = "23505"
 
 type Manager struct {
 	client  *pgxpool.Pool
@@ -107,8 +110,8 @@ func (m *Manager) GetPilotsFromOrg(ctx context.Context, org string) ([]model.Pil
 	return pilots, nil
 }
 
-func (m *Manager) WriteTrack(ctx context.Context, pilotId string, track []model.Point) error {
-	m.logger.Debug("Inserting track", "pilot", pilotId, "track", track)
+func (m *Manager) WriteTrack(ctx context.Context, pilotID string, track []model.Point) error {
+	m.logger.Debug("Inserting track", "pilot", pilotID, "track", track)
 	sqlStatement := `
 	INSERT INTO track (pilot_id, unix_time, latitude, longitude, altitude, msg_type, msg_content)
 	VALUES ($1, $2, $3, $4, $5, $6, $7)`
@@ -116,7 +119,7 @@ func (m *Manager) WriteTrack(ctx context.Context, pilotId string, track []model.
 		_, err := m.client.Exec(
 			ctx,
 			sqlStatement,
-			pilotId,
+			pilotID,
 			point.DateTime,
 			point.Latitude,
 			point.Longitude,
@@ -124,11 +127,14 @@ func (m *Manager) WriteTrack(ctx context.Context, pilotId string, track []model.
 			point.MsgType,
 			point.MsgContent,
 		)
-		if err != nil {
-			return nil
+		if err, ok := err.(*pq.Error); ok {
+			m.logger.Error("Error writing track", "pilotID", pilotID, "error", err.Code)
+			if err.Code != errDuplicateKey {
+				return err
+			}
 		}
 	}
-	m.logger.Debug("Track written", "pilotId", pilotId, "track", track)
+	m.logger.Debug("Track written", "pilotID", pilotID, "track", track)
 	m.metrics.TrackWrittenInc()
 	return nil
 }
@@ -143,7 +149,7 @@ func (m *Manager) GetAllTracksOfDay(ctx context.Context, date time.Time) (map[st
 		return nil, err
 	}
 	for _, pilot := range pilots {
-		points, err := m.GetTrackOfDay(ctx, pilot.Id, date)
+		points, err := m.GetTrackOfDay(ctx, pilot.ID, date)
 		if err != nil {
 			return nil, err
 		}
@@ -153,11 +159,11 @@ func (m *Manager) GetAllTracksOfDay(ctx context.Context, date time.Time) (map[st
 }
 
 // GetTrackOfDay returns the track of the pilot for the given day.
-func (m *Manager) GetTrackOfDay(ctx context.Context, pilotId string, date time.Time) ([]model.Point, error) {
+func (m *Manager) GetTrackOfDay(ctx context.Context, pilotID string, date time.Time) ([]model.Point, error) {
 	day := date.Format("2006-01-02")
-	m.logger.Debug("Retrieving track", "pilot", pilotId, "day", day)
+	m.logger.Debug("Retrieving track", "pilot", pilotID, "day", day)
 	sqlStatement := "SELECT unix_time, latitude, longitude, altitude, msg_type, msg_content FROM track WHERE pilot_id = $1 AND DATE(unix_time) = $2 ORDER BY unix_time"
-	rows, err := m.client.Query(ctx, sqlStatement, pilotId, day)
+	rows, err := m.client.Query(ctx, sqlStatement, pilotID, day)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +172,7 @@ func (m *Manager) GetTrackOfDay(ctx context.Context, pilotId string, date time.T
 	if err != nil {
 		return nil, err
 	}
-	m.logger.Debug("Track retrieved", "pilot", pilotId, "points", points)
+	m.logger.Debug("Track retrieved", "pilot", pilotID, "points", points)
 	m.metrics.TrackRetrievedInc()
 	return points, nil
 }
@@ -174,10 +180,10 @@ func (m *Manager) GetTrackOfDay(ctx context.Context, pilotId string, date time.T
 // GetTrackSince returns the track of the pilot since the given date.
 //
 // If a point occurred at the since time, it is not returned.
-func (m *Manager) GetTrackSince(ctx context.Context, pilotId string, since time.Time) ([]model.Point, error) {
-	m.logger.Debug("Retrieving track", "pilot", pilotId, "since", since)
+func (m *Manager) GetTrackSince(ctx context.Context, pilotID string, since time.Time) ([]model.Point, error) {
+	m.logger.Debug("Retrieving track", "pilot", pilotID, "since", since)
 	sqlStatement := "SELECT unix_time, latitude, longitude, altitude, msg_type, msg_content FROM track WHERE pilot_id = $1 AND unix_time > $2 ORDER BY unix_time"
-	rows, err := m.client.Query(ctx, sqlStatement, pilotId, since)
+	rows, err := m.client.Query(ctx, sqlStatement, pilotID, since)
 	if err != nil {
 		return nil, err
 	}
@@ -186,6 +192,6 @@ func (m *Manager) GetTrackSince(ctx context.Context, pilotId string, since time.
 	if err != nil {
 		return nil, err
 	}
-	m.logger.Debug("Track retrieved", "pilot", pilotId, "points", points)
+	m.logger.Debug("Track retrieved", "pilot", pilotID, "points", points)
 	return points, nil
 }
