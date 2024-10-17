@@ -55,8 +55,8 @@
 	const getDatesWithCount = () => {
 		getFetch(host+"/dates").then((res) => {
 			dates = res['dates']
-				.filter((v) => v.slice(0, 10) != new Date().toISOString().slice(0, 10))
-				.map((v) => {
+				.filter((v: string) => v.slice(0, 10) != new Date().toISOString().slice(0, 10))
+				.map((v: string) => {
 					return v.slice(0, 10);
 				});
 		});
@@ -93,7 +93,7 @@
 
 		getTracks().then((data) => {
 			pilotsStore.set([]);
-			let tracks = Object.fromEntries(Object.entries(data).filter(([k, v]) => v.length > 0));
+			let tracks = Object.fromEntries(Object.entries(data).filter(([_, v]) => v.length > 0));
 			console.log(tracks);
 			const colors = distinctColors({ count: Object.keys(tracks).length });
 			let i: number = 0;
@@ -101,7 +101,7 @@
 				const coordinates: number[][] = [];
 				const color = colors[i].hex();
 
-				track.forEach((point) => {
+				track.forEach((point: { Longitude: number; Latitude: number; }) => {
 					coordinates.push([point.Longitude, point.Latitude]);
 				});
 
@@ -162,7 +162,9 @@
 						color: color,
 						name: pilot,
 						altitude: point.Altitude,
-						track: '',
+						cumDist: point.CumDist,
+						takeOffDist: point.TakeOffDist,
+						flightTime: point.FlightTime,
 						last: point.DateTime.slice(11, 16)
 					}
 				]);

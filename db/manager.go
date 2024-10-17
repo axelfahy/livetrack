@@ -174,6 +174,7 @@ func (m *Manager) GetTrackOfDay(ctx context.Context, pilotID string, date time.T
 	}
 	m.logger.Debug("Track retrieved", "pilot", pilotID, "points", points)
 	m.metrics.TrackRetrievedInc()
+	// TODO: computed stats (flight time, takeoffdist, cumdist, avgspeed, legspeed, legdist
 	return points, nil
 }
 

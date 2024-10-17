@@ -21,7 +21,7 @@
 				</td>
 				<td>{pilot.name}</td>
 				<td>{pilot.altitude}</td>
-				<td>{pilot.track}</td>
+				<td>{pilot.cumDist}/{pilot.takeOffDist}/{pilot.flightTime}</td>
 				<td>{pilot.last}</td>
 			</tr>
 		{/each}

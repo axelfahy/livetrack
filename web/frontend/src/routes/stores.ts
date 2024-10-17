@@ -4,7 +4,9 @@ interface Pilot {
 	color: string;
 	name: string;
 	altitude: number;
-	track: string;
+	cumDist: number;
+	takeOffDist: number;
+	flightTime: string;
 	last: string;
 }
 
