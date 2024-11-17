@@ -1,12 +1,12 @@
-VERSION=v1.1.1
-VERSION_FRONTEND=v0.0.1
+VERSION=v2.0.0
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
+GOFUMPT=gofumpt
+WSL=wsl
 GOLINT=golangci-lint run
-BUILD_PLATFORM=linux/arm64
-PACKAGE_PLATFORM=$(BUILD_PLATFORM)
+BUILDPLATFORM=linux/amd64
 VERSION_MAJOR=$(shell echo $(VERSION) | cut -f1 -d.)
 VERSION_MINOR=$(shell echo $(VERSION) | cut -f2 -d.)
 GIT_COMMIT=$(shell git rev-parse HEAD)
@@ -15,7 +15,6 @@ BUILD_DATE=$(shell date '+%Y-%m-%d-%H:%M:%S')
 # Image name
 GO_PACKAGE=fahy.xyz/livetrack
 GO_REGISTRY := $(if ${REGISTRY},$(patsubst %/,%,${REGISTRY})/)
-FRONTEND_PACKAGE=fahy.xyz/livetrack-web
 
 all: ensure package
 
@@ -25,28 +24,42 @@ ensure:
 clean:
 	$(GOCLEAN)
 
+fmt:
+	$(GOFUMPT) -l -w .
+	$(WSL) --fix ./...
+
 lint:
 	$(GOLINT) ./...
 
-package:
+test:
+	$(GOTEST) ./...
+
+package-bot:
 	docker buildx build -f ./Dockerfile \
-		--platform $(BUILD_PLATFORM) \
+		--platform $(BUILDPLATFORM) \
 		--build-arg VERSION=$(VERSION) \
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
 		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
 		--build-arg GIT_DIRTY=$(GIT_DIRTY) \
-		-t $(GO_REGISTRY)$(GO_PACKAGE):$(VERSION) \
-		-t $(GO_REGISTRY)$(GO_PACKAGE):$(VERSION_MAJOR).$(VERSION_MINOR) \
-		-t $(GO_REGISTRY)$(GO_PACKAGE):$(VERSION_MAJOR) \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-bot:$(VERSION) \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-bot:$(VERSION_MAJOR).$(VERSION_MINOR) \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-bot:$(VERSION_MAJOR) \
 		--load \
+		--target bot \
 		.
 
-frontend:
-	docker buildx build -f web/frontend/Dockerfile \
-		--platform $(BUILD_PLATFORM) \
-		-t $(GO_REGISTRY)$(FRONTEND_PACKAGE):$(VERSION_FRONTEND) \
+package-web: 
+	docker buildx build -f ./Dockerfile \
+		--platform $(BUILDPLATFORM) \
+		--build-arg VERSION=$(VERSION) \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--build-arg GIT_COMMIT=${GIT_COMMIT} \
+		--build-arg GIT_DIRTY=${GIT_DIRTY} \
+		--build-arg GIT_BRANCH=${GIT_BRANCH} \
+		--build-arg GIT_USER=${GIT_USER} \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-web:$(VERSION) \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-web:$(VERSION_MAJOR).$(VERSION_MINOR) \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-web:$(VERSION_MAJOR) \
 		--load \
-		web/frontend/
-
-test:
-	$(GOTEST) ./...
+		--target web \
+		.

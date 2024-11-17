@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livetracking</title>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        #map-wrap {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        
+        #map {
+		    position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        #date-select {
+            position: absolute; 
+            top: 20px; 
+            left: 30px; 
+            z-index: 1000; 
+        }
+
+        #legend {
+            position: absolute;
+            top: 20px;
+            left: 200px;
+            z-index: 1000; 
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        #legend div {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        #legend .color-box {
+            width: 12px;
+            height: 12px;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map-wrap">
+        <select 
+            id="date-select" 
+            name="date"
+            hx-get="/dates" 
+            hx-trigger="load" 
+            hx-target="#date-select" 
+            hx-vals="date"
+            hx-swap="innerHTML">
+        </select>
+
+        <div id="map"></div>
+
+        <div id="legend"></div>
+    </div>
+
+    <script>
+        // Initialize the map, setting a default view
+        var map = L.map('map', {zoomControl: false}).setView([51.505, -0.09], 3); // Initial latitude, longitude, and zoom
+        var pilotLayers = [];
+        var legend = document.getElementById("legend");
+
+        // Zoom buttons at bottom left.
+        L.control.zoom({
+            position: 'bottomright'
+        }).addTo(map);
+
+        // Load and add a base layer (e.g., OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var colors = [
+            '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000'
+        ];
+
+        function updateMapData(pilotData) {
+            // Clear existing layers
+            pilotLayers.forEach(layer => map.removeLayer(layer));
+            pilotLayers = [];
+            legend.innerHTML = "";
+
+            // Array to store all coordinates for fitting bounds
+            const allLatLngs = [];
+
+            Object.keys(pilotData).forEach((pilot, index) => {
+                const points = pilotData[pilot];
+
+                // Create a polyline array for connecting points for this pilot
+                const latLngs = points.map(point => [point.Latitude, point.Longitude]);
+                console.log("coordonnates: " + latLngs)
+
+                // Get a unique color for this pilot's track
+                const color = colors[index % colors.length];
+
+                // Draw polyline to represent the track
+                const polyline = L.polyline(latLngs, { color: color }).addTo(map);
+                console.log("polyline: " + polyline)
+
+                // Add each pilot to the legend with their color
+                const legendItem = document.createElement("div");
+                legendItem.innerHTML = `
+                    <span class="color-box" style="background-color: ${color};"></span>
+                    ${pilot}
+                `;
+                legend.appendChild(legendItem);
+
+                // Add individual markers for each point with a popup showing details
+                points.forEach(point => {
+                    console.log("point: " + point)
+                    const marker = L.marker([point.Latitude, point.Longitude]).addTo(map);
+                    marker.bindPopup(`
+                        <strong>${pilot}</strong><br>
+                        DateTime: ${new Date(point.DateTime).toLocaleString()}<br>
+                        Altitude: ${point.Altitude} m<br>
+                        MsgType: ${point.MsgType}<br>
+                        MsgContent: ${point.MsgContent}<br>
+                        AvgSpeed: ${point.AvgSpeed} km/h<br>
+                        LegDist: ${point.LegDist} km
+                    `);
+                    // Add the point to allLatLngs for bounding later
+                    allLatLngs.push([point.Latitude, point.Longitude]);
+                });
+            });
+            console.log("finished drawing points")
+            
+            // Only fit bounds if there are points
+            if (allLatLngs.length > 0) {
+                map.fitBounds(allLatLngs);
+            }
+        }
+
+        // Initial data from Go server
+        var initialData = JSON.parse(`{{ .PilotData }}`);
+        updateMapData(initialData);
+
+        // Handle updates from htmx
+        document.body.addEventListener('htmx:afterSwap', (e) => {
+            if (e.detail.target.id === "map-wrap" ) {
+                console.log("New data: " + newData);
+                const newData = JSON.parse(e.detail.xhr.responseText);
+                updateMapData(newData);
+            }
+        });
+
+        // Set the hx-get URL with the selected value on load
+        //document.addEventListener("DOMContentLoaded", function() {
+        //    const selectElement = document.getElementById("date-select");
+        //    const selectedDate = selectElement.value;
+
+        //    // Update hx-get URL to include the selected date as a query parameter
+        //    selectElement.setAttribute("hx-get", `/dates?date=${encodeURIComponent(selectedDate)}`);
+        //    console.log("Calling")
+        //    
+        //    // Trigger the initial load request with the updated hx-get URL
+        //    htmx.trigger(selectElement, "load");
+        //});
+
+        // Make map responsive to window resizing
+        window.addEventListener('resize', () => map.invalidateSize());
+    </script>
+</body>
+</html>
