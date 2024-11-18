@@ -9,20 +9,23 @@ import (
 )
 
 type Pilot struct {
-	ID          string `db:"id"`
-	Name        string `db:"name"`
-	Points      []Point
-	Home        string   `db:"home"`
-	Orgs        []string `db:"orgs"`
-	TrackerType string   `db:"tracker_type"`
+	ID          string   `db:"id"           json:"id"`
+	Name        string   `db:"name"         json:"name"`
+	Points      []Point  `json:"points"`
+	Home        string   `db:"home"         json:"home"`
+	Orgs        []string `db:"orgs"         json:"orgs"`
+	TrackerType string   `db:"tracker_type" json:"trackerType"`
 }
 
-const apiSearch string = "https://timetable.search.ch/api/route.json"
+const (
+	apiSearch   = "https://timetable.search.ch/api/route.json"
+	HTTPTimeout = time.Duration(5) * time.Second
+)
 
 func (p *Pilot) GetCumulativeDistance() float64 {
 	dist := 0.0
 
-	for i := 0; i < len(p.Points)-2; i++ {
+	for i := range len(p.Points) - 2 {
 		startPoint := p.Points[i]
 		endPoint := p.Points[i+1]
 		dist += distance(startPoint.Latitude, startPoint.Longitude, endPoint.Latitude, endPoint.Longitude)
@@ -50,7 +53,7 @@ func (p *Pilot) GetSbbItinerary(latitude, longitude float64) (string, error) {
 	url.RawQuery = params.Encode()
 
 	client := &http.Client{
-		Timeout: time.Duration(5) * time.Second,
+		Timeout: HTTPTimeout,
 	}
 
 	resp, err := client.Get(fmt.Sprintf("%v", url))

@@ -14,7 +14,6 @@ import (
 	"fahy.xyz/livetrack/internal/bot"
 	"fahy.xyz/livetrack/internal/db"
 	"fahy.xyz/livetrack/internal/metrics"
-
 	"github.com/kelseyhightower/envconfig"
 	"github.com/procyon-projects/chrono"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -33,11 +32,11 @@ type envConfig struct {
 	PostgresUser     string `envconfig:"POSTGRES_USER"     required:"true"     desc:"The postgres user"`
 	PostgresPassword string `envconfig:"POSTGRES_PASSWORD" required:"true"     desc:"The postgres password"`
 	// Behaviour settings
-	FetchInterval time.Duration `envconfig:"FETCH_INTERVAL" default:"4m" desc:"The interval between two fetches"`
-	Organization  string        `envconfig:"ORGANIZATION" required:"true" desc:"The organization of the pilots to retrieve"`
+	FetchInterval time.Duration `envconfig:"FETCH_INTERVAL" default:"4m"    desc:"The interval between two fetches"`
+	Organization  string        `envconfig:"ORGANIZATION"   required:"true" desc:"The organization of the pilots to retrieve"`
 	// Telegram config
 	TelegramChannel string `envconfig:"TELEGRAM_CHANNEL" required:"true" desc:"The telegram channel to use"`
-	TelegramToken   string `envconfig:"TELEGRAM_TOKEN" required:"true"   desc:"The telegram token to use"`
+	TelegramToken   string `envconfig:"TELEGRAM_TOKEN"   required:"true" desc:"The telegram token to use"`
 	// Metrics
 	MetricsSubsystem string `envconfig:"METRICS_SUBSYSTEM" default:"bot" desc:"The Prometheus subsystem for the metrics"`
 }
@@ -66,7 +65,7 @@ func main() {
 	}
 }
 
-//nolint:maintidx // To be refactored.
+//nolint:cyclop,maintidx // To be refactored.
 func run(env envConfig, logger *slog.Logger) error {
 	logger.Info("Livetrack bot is initializing...",
 		"version", version.Version,
@@ -122,17 +121,21 @@ func run(env envConfig, logger *slog.Logger) error {
 		ctx, cancel := context.WithTimeout(context.Background(), serverShutdownTimeout)
 		defer cancel()
 
-		if err := httpServer.Shutdown(ctx); err != nil {
+		if err := httpServer.Shutdown(ctx); err != nil { //nolint:contextcheck,lll // This is a bug https://github.com/kkHAIKE/contextcheck/issues/2
 			return fmt.Errorf("shutting down HTTP server: %w", err)
 		}
 
 		return nil
 	})
 
-	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", env.PostgresUser, env.PostgresPassword, env.PostgresHost, env.PostgresPort, env.PostgresDBName)
-	logger.Info("Connecting to database", "URL", databaseUrl)
+	databaseURL := fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
+		env.PostgresUser, env.PostgresPassword,
+		env.PostgresHost, env.PostgresPort, env.PostgresDBName,
+	)
+	logger.Info("Connecting to database", "URL", databaseURL)
 
-	manager, err := db.NewManager(ctx, databaseUrl, logger.With("component", "manager"), promMetrics)
+	manager, err := db.NewManager(ctx, databaseURL, logger.With("component", "manager"), promMetrics)
 	if err != nil {
 		return fmt.Errorf("starting DB manager: %w", err)
 	}
@@ -161,6 +164,7 @@ func run(env envConfig, logger *slog.Logger) error {
 		pilots, err = manager.GetPilotsFromOrg(ctx, env.Organization)
 		if err != nil {
 			logger.Error("Retrieving pilots", "error", err)
+
 			return
 		}
 	}, "0 0 0 * * *")
@@ -169,7 +173,7 @@ func run(env envConfig, logger *slog.Logger) error {
 		now := time.Now()
 		logger.Info("Retrieving tracks", "time", now)
 
-		for i := 0; i < len(pilots); i++ {
+		for i := range pilots {
 			since := now.Truncate(time.Hour * 24)
 			if pilots[i].Points != nil {
 				since = pilots[i].Points[len(pilots[i].Points)-1].DateTime
@@ -180,6 +184,7 @@ func run(env envConfig, logger *slog.Logger) error {
 			points, err := manager.GetTrackSince(ctx, pilots[i].ID, since)
 			if err != nil {
 				logger.Error("Retrieving track for pilot", "pilot", pilots[i], "error", err)
+
 				return
 			}
 
@@ -194,6 +199,7 @@ func run(env envConfig, logger *slog.Logger) error {
 				))
 				if err != nil {
 					logger.Error("Sending message", "pilot", pilots[i], "error", err)
+
 					return
 				}
 			}
@@ -210,11 +216,11 @@ func run(env envConfig, logger *slog.Logger) error {
 				case "OK":
 					sbbItinerary := "No SBB itinerary"
 
-					sbbUrl, err := pilots[i].GetSbbItinerary(point.Latitude, point.Longitude)
+					sbbURL, err := pilots[i].GetSbbItinerary(point.Latitude, point.Longitude)
 					if err != nil {
 						logger.Error("Retrieving SBB itinerary", "pilot", pilots[i], "error", err)
 					} else {
-						sbbItinerary = fmt.Sprintf("[Back with SBB](%s)", sbbUrl)
+						sbbItinerary = fmt.Sprintf("[Back with SBB](%s)", sbbURL)
 					}
 
 					msg = fmt.Sprintf(
@@ -252,6 +258,7 @@ func run(env envConfig, logger *slog.Logger) error {
 				if msg != "" {
 					if err = bot.SendMessage(msg); err != nil {
 						logger.Error("Sending message", "msg", msg, "error", err)
+
 						return
 					}
 				}

@@ -1,6 +1,7 @@
 package fetcher
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -21,14 +22,14 @@ type SpotFetcher struct {
 
 func NewSpotFetcher(url string, logger *slog.Logger, metrics metrics) *SpotFetcher {
 	return &SpotFetcher{
-		client:  &http.Client{Timeout: time.Duration(10) * time.Second},
+		client:  &http.Client{Timeout: HTTPTimeout},
 		url:     url,
 		logger:  logger,
 		metrics: metrics,
 	}
 }
 
-func (f *SpotFetcher) createUrl(id string) (string, error) {
+func (f *SpotFetcher) createURL(id string) (string, error) {
 	s, err := url.JoinPath(f.url, id, "message.json")
 	if err != nil {
 		return "", err
@@ -39,15 +40,22 @@ func (f *SpotFetcher) createUrl(id string) (string, error) {
 	return sWithDate, nil
 }
 
-func (f *SpotFetcher) Fetch(id string) ([]model.Point, error) {
-	url, err := f.createUrl(id)
+func (f *SpotFetcher) Fetch(ctx context.Context, id string) ([]model.Point, error) {
+	url, err := f.createURL(id)
 	if err != nil {
 		return nil, err
 	}
 
 	f.logger.Info("fetching", "url", url)
 
-	resp, err := f.client.Get(url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("User-Agent", "Wget/1.13.4 (linux-gnu)")
+
+	resp, err := f.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

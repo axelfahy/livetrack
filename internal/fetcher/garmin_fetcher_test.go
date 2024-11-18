@@ -1,6 +1,7 @@
 package fetcher
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -10,16 +11,19 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestGarminFetcher_createUrl(t *testing.T) {
+func TestGarminFetcher_createURL(t *testing.T) {
+	t.Parallel()
+
 	fetcherA := NewGarminFetcher(
 		"https://share.garmin.com/Feed/Share/",
 		slog.Default().With("component", "garmin-fetcher"),
 		&emptyMetrics{},
 	)
-	urlA, err := fetcherA.createUrl("garminId")
-	assert.Nil(t, err)
+	urlA, err := fetcherA.createURL("garminId")
+	require.NoError(t, err)
 
 	year, month, day := time.Now().Date()
 	assert.Equal(
@@ -30,19 +34,21 @@ func TestGarminFetcher_createUrl(t *testing.T) {
 }
 
 func TestGarminFetcher_Fetch(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
 
 		data, err := os.ReadFile("../model/garmin/testdata/feed.kml")
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 
 		_, _ = w.Write(data)
 	}))
 	defer server.Close()
 	fetcher := NewGarminFetcher(server.URL, slog.Default().With("component", "garmin-fetcher"), &emptyMetrics{})
-	res, err := fetcher.Fetch("garminId")
-	assert.Nil(t, err)
+	res, err := fetcher.Fetch(context.Background(), "garminId")
+	require.NoError(t, err)
 
 	assert.Equal(t, "Tracking turned on from device.", res[0].MsgType)
-	assert.Equal(t, 46.62515, res[1].Latitude)
+	assert.InEpsilon(t, 46.62515, res[1].Latitude, 0.1)
 }

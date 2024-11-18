@@ -9,6 +9,26 @@ output:
   print-issued-lines: true
   print-linter-name: true
 
+linters-settings:
+  varnamelen:
+    ignore-type-assert-ok: true
+    ignore-decls:
+      - "w http.ResponseWriter"
+      - "r *http.Request"
+      - "wg *sync.WaitGroup"
+  tagalign:
+    sort: false
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - lll
+        - gochecknoglobals
+    - source: "`.*`"
+      linters:
+      - lll # Because of the struct tags
+
 linters:
   enable-all: true
   disable:
@@ -18,16 +38,16 @@ linters:
     #- bodyclose
     #- canonicalheader
     #- containedctx
-    - contextcheck
+    #- contextcheck
     #- copyloopvar
-    - cyclop
+    #- cyclop
     #- decorder
     - depguard
     #- dogsled
-    #- dupl
+    - dupl
     #- dupword
     #- durationcheck
-    - err113
+    #- err113
     #- errcheck
     #- errchkjson
     #- errname
@@ -40,17 +60,17 @@ linters:
     #- forbidigo
     #- forcetypeassert
     - funlen
-    - gci
+    #- gci
     #- ginkgolinter
     #- gocheckcompilerdirectives
-    - gochecknoglobals
+    #- gochecknoglobals
     #- gochecknoinits
     #- gochecksumtype
     - gocognit
     #- goconst
     #- gocritic
     #- gocyclo
-    - godot
+    #- godot
     - godox
     #- gofmt
     #- gofumpt
@@ -61,62 +81,62 @@ linters:
     #- gomodguard
     #- goprintffuncname
     #- gosec
-    - gosimple
+    #- gosimple
     #- gosmopolitan
-    - govet
+    #- govet
     #- grouper
     #- importas
     #- inamedparam
     #- ineffassign
     #- interfacebloat
-    - intrange
+    #- intrange
     #- ireturn
-    - lll
+    #- lll
     #- loggercheck
     #- maintidx
     #- makezero
     #- mirror
     #- misspell
     - mnd
-    - musttag
+    #- musttag
     #- nakedret
-    - nestif
+    #- nestif
     #- nilerr
     #- nilnil
-    - nlreturn
+    #- nlreturn
     - noctx
     #- nolintlint
     #- nonamedreturns
     - nosprintfhostport
-    - paralleltest
-    - perfsprint
+    #- paralleltest
+    #- perfsprint
     #- prealloc
     #- predeclared
     #- promlinter
     #- protogetter
     #- reassign
-    - revive
+    #- revive
     #- rowserrcheck
     #- sloglint
     #- spancheck
     #- sqlclosecheck
     #- staticcheck
-    - stylecheck
-    - tagalign
+    #- stylecheck
+    #- tagalign
     #- tagliatelle
     #- tenv
     #- testableexamples
-    - testifylint
+    #- testifylint
     - testpackage
     #- thelper
     #- tparallel
     #- unconvert
     #- unparam
-    - unused
-    - usestdlibvars
-    - varnamelen
+    #- unused
+    #- usestdlibvars
+    #- varnamelen
     #- wastedassign
     #- whitespace
-    - wrapcheck
-    - wsl
+    #- wrapcheck
+    #- wsl
     #- zerologlint

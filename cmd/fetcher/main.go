@@ -14,7 +14,6 @@ import (
 	"fahy.xyz/livetrack/internal/fetcher"
 	"fahy.xyz/livetrack/internal/metrics"
 	"fahy.xyz/livetrack/internal/model"
-
 	"github.com/kelseyhightower/envconfig"
 	"github.com/procyon-projects/chrono"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -33,8 +32,8 @@ type envConfig struct {
 	PostgresUser     string `envconfig:"POSTGRES_USER"     required:"true"     desc:"The postgres user"`
 	PostgresPassword string `envconfig:"POSTGRES_PASSWORD" required:"true"     desc:"The postgres password"`
 	// Fetchers
-	SpotBaseUrl   string `envconfig:"SPOT_BASE_URL"   default:"https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/" desc:"The base URL for the SPOT tracking"`
-	GarminBaseUrl string `envconfig:"GARMIN_BASE_URL" default:"https://share.garmin.com/Feed/Share/"                                        desc:"The base URL for the garmin tracking"`
+	SpotBaseURL   string `envconfig:"SPOT_BASE_URL"   default:"https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/" desc:"The base URL for the SPOT tracking"`
+	GarminBaseURL string `envconfig:"GARMIN_BASE_URL" default:"https://share.garmin.com/Feed/Share/"                                        desc:"The base URL for the garmin tracking"`
 	// Behaviour settings
 	FetchInterval time.Duration `envconfig:"FETCH_INTERVAL" default:"4m" desc:"The interval between two fetches"`
 	// Metrics
@@ -44,6 +43,7 @@ type envConfig struct {
 const (
 	garminTracker = "garmin"
 	spotTracker   = "spot"
+	fetchDelay    = 5 * time.Second
 
 	defaultReadTimeout    = 5 * time.Second
 	defaultWriteTimeout   = 10 * time.Second
@@ -68,6 +68,7 @@ func main() {
 	}
 }
 
+//nolint:cyclop // To be refactored.
 func run(env envConfig, logger *slog.Logger) error {
 	logger.Info("Livetrack fetcher is initializing...",
 		"version", version.Version,
@@ -123,17 +124,21 @@ func run(env envConfig, logger *slog.Logger) error {
 		ctx, cancel := context.WithTimeout(context.Background(), serverShutdownTimeout)
 		defer cancel()
 
-		if err := httpServer.Shutdown(ctx); err != nil {
+		if err := httpServer.Shutdown(ctx); err != nil { //nolint:contextcheck,lll // This is a bug https://github.com/kkHAIKE/contextcheck/issues/2
 			return fmt.Errorf("shutting down HTTP server: %w", err)
 		}
 
 		return nil
 	})
 
-	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", env.PostgresUser, env.PostgresPassword, env.PostgresHost, env.PostgresPort, env.PostgresDBName)
-	logger.Info("Connecting to database", "URL", databaseUrl)
+	databaseURL := fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
+		env.PostgresUser, env.PostgresPassword,
+		env.PostgresHost, env.PostgresPort, env.PostgresDBName,
+	)
+	logger.Info("Connecting to database", "URL", databaseURL)
 
-	manager, err := db.NewManager(ctx, databaseUrl, logger.With("component", "manager"), promMetrics)
+	manager, err := db.NewManager(ctx, databaseURL, logger.With("component", "manager"), promMetrics)
 	if err != nil {
 		return fmt.Errorf("starting DB manager: %w", err)
 	}
@@ -145,8 +150,8 @@ func run(env envConfig, logger *slog.Logger) error {
 		return fmt.Errorf("retrieving pilots: %w", err)
 	}
 
-	garminFetcher := fetcher.NewGarminFetcher(env.GarminBaseUrl, logger.With("component", "garmin-fetcher"), promMetrics)
-	spotFetcher := fetcher.NewSpotFetcher(env.SpotBaseUrl, logger.With("component", "spot-fetcher"), promMetrics)
+	garminFetcher := fetcher.NewGarminFetcher(env.GarminBaseURL, logger.With("component", "garmin-fetcher"), promMetrics)
+	spotFetcher := fetcher.NewSpotFetcher(env.SpotBaseURL, logger.With("component", "spot-fetcher"), promMetrics)
 
 	taskScheduler := chrono.NewDefaultTaskScheduler()
 
@@ -157,6 +162,7 @@ func run(env envConfig, logger *slog.Logger) error {
 		pilots, err = manager.GetAllPilots(ctx)
 		if err != nil {
 			logger.Error("Retrieving pilots", "error", err)
+
 			return
 		}
 	}, "0 0 0 * * *")
@@ -169,19 +175,22 @@ func run(env envConfig, logger *slog.Logger) error {
 
 			switch pilot.TrackerType {
 			case garminTracker:
-				points, err = garminFetcher.Fetch(pilot.ID)
+				points, err = garminFetcher.Fetch(ctx, pilot.ID)
 				if err != nil {
 					logger.Error("Retrieving tracker for garmin", "ID", pilot.ID, "error", err)
+
 					continue
 				}
 			case spotTracker:
-				points, err = spotFetcher.Fetch(pilot.ID)
+				points, err = spotFetcher.Fetch(ctx, pilot.ID)
 				if err != nil {
 					logger.Error("Retrieving tracker for spot", "ID", pilot.ID, "error", err)
+
 					continue
 				}
 			default:
 				logger.Error("Unknown tracker", "pilot", pilot)
+
 				continue
 			}
 
@@ -193,7 +202,7 @@ func run(env envConfig, logger *slog.Logger) error {
 				}
 			}
 
-			time.Sleep(5 * time.Second)
+			time.Sleep(fetchDelay)
 		}
 	}, env.FetchInterval)
 

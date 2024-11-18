@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -11,7 +12,6 @@ import (
 	"time"
 
 	"fahy.xyz/livetrack/internal/model"
-
 	"github.com/gorilla/mux"
 )
 
@@ -29,7 +29,7 @@ type Handler struct {
 	metrics  handlerMetrics
 }
 
-// Option represents a single date option for the select element
+// Option represents a single date option for the select element.
 type Option struct {
 	Date     string
 	Label    string
@@ -40,7 +40,7 @@ type Option struct {
 var views embed.FS
 
 func NewHandler(endpoint string, logger *slog.Logger, metrics handlerMetrics) *Handler {
-	t := template.Must(template.ParseFS(views, "views/*"))
+	tViews := template.Must(template.ParseFS(views, "views/*"))
 
 	client := &http.Client{
 		Timeout: timeout,
@@ -49,7 +49,7 @@ func NewHandler(endpoint string, logger *slog.Logger, metrics handlerMetrics) *H
 	return &Handler{
 		endpoint: endpoint,
 		client:   client,
-		template: t,
+		template: tViews,
 		logger:   logger,
 		metrics:  metrics,
 	}
@@ -59,7 +59,7 @@ type pilotData struct {
 	PilotData string
 }
 
-func (h *Handler) getTracksOfDay(date string) (pilotData, error) {
+func (h *Handler) getTracksOfDay(ctx context.Context, date string) (pilotData, error) {
 	url, err := url.JoinPath(h.endpoint, "/tracks/"+date)
 	if err != nil {
 		return pilotData{}, fmt.Errorf("parsing URL: %w", err)
@@ -67,9 +67,16 @@ func (h *Handler) getTracksOfDay(date string) (pilotData, error) {
 
 	h.logger.Info("[GET]", "url", url)
 
-	resp, err := h.client.Get(url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return pilotData{}, fmt.Errorf("retrieving tracks: %w", err)
+		return pilotData{}, err
+	}
+
+	req.Header.Set("User-Agent", "Wget/1.13.4 (linux-gnu)")
+
+	resp, err := h.client.Do(req)
+	if err != nil {
+		return pilotData{}, err
 	}
 	defer resp.Body.Close()
 
@@ -99,7 +106,7 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 
 	today := time.Now().Format("2006-01-02")
 
-	tmplData, err := h.getTracksOfDay(today)
+	tmplData, err := h.getTracksOfDay(r.Context(), today)
 	if err != nil {
 		h.logger.ErrorContext(r.Context(), "Retrieving tracks", "date", today, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -123,11 +130,20 @@ func (h *Handler) GetDates(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error parsing url", http.StatusInternalServerError)
 	}
 
-	resp, err := h.client.Get(url)
+	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, url, nil)
+	if err != nil {
+		h.logger.ErrorContext(r.Context(), "Creating request", "error", err)
+		http.Error(w, "error creating request", http.StatusInternalServerError)
+	}
+
+	req.Header.Set("User-Agent", "Wget/1.13.4 (linux-gnu)")
+
+	resp, err := h.client.Do(req)
 	if err != nil {
 		h.logger.ErrorContext(r.Context(), "Retrieving dates", "error", err)
 		http.Error(w, "error retrieving dates", http.StatusInternalServerError)
 	}
+
 	defer resp.Body.Close()
 
 	dates := struct {
@@ -172,7 +188,7 @@ func (h *Handler) GetTracks(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	date := vars["date"]
 
-	tmplData, err := h.getTracksOfDay(date)
+	tmplData, err := h.getTracksOfDay(r.Context(), date)
 	if err != nil {
 		h.logger.ErrorContext(r.Context(), "Retrieving tracks", "date", date, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

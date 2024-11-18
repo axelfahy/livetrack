@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"fahy.xyz/livetrack/internal/model"
-
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lib/pq"
@@ -26,8 +25,13 @@ type managerMetrics interface {
 	TrackWritten()
 }
 
-func NewManager(ctx context.Context, databaseUrl string, logger *slog.Logger, metrics managerMetrics) (*Manager, error) {
-	conn, err := pgxpool.New(ctx, databaseUrl)
+func NewManager(
+	ctx context.Context,
+	databaseURL string,
+	logger *slog.Logger,
+	metrics managerMetrics,
+) (*Manager, error) {
+	conn, err := pgxpool.New(ctx, databaseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +79,15 @@ func (m *Manager) GetAllPilots(ctx context.Context) ([]model.Pilot, error) {
 
 // GetDatesWithCount returns the recent dates (n=limit) with the number of flights for the day.
 func (m *Manager) GetDatesWithCount(ctx context.Context, limit int) ([]time.Time, []int, error) {
-	rows, err := m.client.Query(ctx, "SELECT COUNT(DISTINCT pilot_id), unix_time::date FROM track GROUP BY unix_time::date ORDER BY unix_time DESC LIMIT $1", limit)
+	rows, err := m.client.Query(
+		ctx,
+		`SELECT COUNT(DISTINCT pilot_id), unix_time::date 
+		 FROM track 
+		 GROUP BY unix_time::date 
+		 ORDER BY unix_time 
+		 DESC LIMIT $1`,
+		limit,
+	)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -123,13 +135,11 @@ func (m *Manager) GetPilotsFromOrg(ctx context.Context, org string) ([]model.Pil
 func (m *Manager) WriteTrack(ctx context.Context, pilotID string, track []model.Point) error {
 	m.logger.Debug("Inserting track", "pilot", pilotID, "track", track)
 
-	sqlStatement := `
-	INSERT INTO track (pilot_id, unix_time, latitude, longitude, altitude, msg_type, msg_content)
-	VALUES ($1, $2, $3, $4, $5, $6, $7)`
 	for _, point := range track {
 		_, err := m.client.Exec(
 			ctx,
-			sqlStatement,
+			`INSERT INTO track (pilot_id, unix_time, latitude, longitude, altitude, msg_type, msg_content)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 			pilotID,
 			point.DateTime,
 			point.Latitude,
@@ -181,9 +191,15 @@ func (m *Manager) GetTrackOfDay(ctx context.Context, pilotID string, date time.T
 	day := date.Format("2006-01-02")
 	m.logger.Debug("Retrieving track", "pilot", pilotID, "day", day)
 
-	sqlStatement := "SELECT unix_time, latitude, longitude, altitude, msg_type, msg_content FROM track WHERE pilot_id = $1 AND DATE(unix_time) = $2 ORDER BY unix_time"
-
-	rows, err := m.client.Query(ctx, sqlStatement, pilotID, day)
+	rows, err := m.client.Query(
+		ctx,
+		`SELECT unix_time, latitude, longitude, altitude, msg_type, msg_content 
+		 FROM track 
+		 WHERE pilot_id = $1 AND DATE(unix_time) = $2 
+		 ORDER BY unix_time`,
+		pilotID,
+		day,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -207,9 +223,15 @@ func (m *Manager) GetTrackOfDay(ctx context.Context, pilotID string, date time.T
 func (m *Manager) GetTrackSince(ctx context.Context, pilotID string, since time.Time) ([]model.Point, error) {
 	m.logger.Debug("Retrieving track", "pilot", pilotID, "since", since)
 
-	sqlStatement := "SELECT unix_time, latitude, longitude, altitude, msg_type, msg_content FROM track WHERE pilot_id = $1 AND unix_time > $2 ORDER BY unix_time"
-
-	rows, err := m.client.Query(ctx, sqlStatement, pilotID, since)
+	rows, err := m.client.Query(
+		ctx,
+		`SELECT unix_time, latitude, longitude, altitude, msg_type, msg_content 
+		 FROM track 
+		 WHERE pilot_id = $1 AND unix_time > $2 
+		 ORDER BY unix_time`,
+		pilotID,
+		since,
+	)
 	if err != nil {
 		return nil, err
 	}

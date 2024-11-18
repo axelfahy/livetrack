@@ -1,6 +1,7 @@
 package fetcher
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -21,14 +22,14 @@ type GarminFetcher struct {
 
 func NewGarminFetcher(url string, logger *slog.Logger, metrics metrics) *GarminFetcher {
 	return &GarminFetcher{
-		client:  &http.Client{Timeout: time.Duration(10) * time.Second},
+		client:  &http.Client{Timeout: HTTPTimeout},
 		url:     url,
 		logger:  logger,
 		metrics: metrics,
 	}
 }
 
-func (f *GarminFetcher) createUrl(id string) (string, error) {
+func (f *GarminFetcher) createURL(id string) (string, error) {
 	s, err := url.JoinPath(f.url, id)
 	if err != nil {
 		return "", err
@@ -45,15 +46,15 @@ func (f *GarminFetcher) createUrl(id string) (string, error) {
 	return sWithDate, nil
 }
 
-func (f *GarminFetcher) Fetch(id string) ([]model.Point, error) {
-	url, err := f.createUrl(id)
+func (f *GarminFetcher) Fetch(ctx context.Context, id string) ([]model.Point, error) {
+	url, err := f.createURL(id)
 	if err != nil {
 		return nil, err
 	}
 
 	f.logger.Info("fetching", "url", url)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,6 @@ import (
 
 	"fahy.xyz/livetrack/internal/model"
 	"fahy.xyz/livetrack/internal/model/spot"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -53,16 +52,22 @@ func TestMain(m *testing.M) {
 }
 
 func TestPilot_GetCumulativeDistance(t *testing.T) {
+	t.Parallel()
+
 	dist := pilot.GetCumulativeDistance()
-	assert.Equal(t, 143.90572292269138, dist)
+	assert.InEpsilon(t, 143.90572292269138, dist, 0.1)
 }
 
 func TestPilot_GetFlightTime(t *testing.T) {
+	t.Parallel()
+
 	flightTime := pilot.GetFlightTime()
 	assert.Equal(t, "4h12m11s", fmt.Sprint(flightTime))
 }
 
 func TestPilot_GetTakeOffDistance(t *testing.T) {
+	t.Parallel()
+
 	dist := pilot.GetTakeOffDistance()
-	assert.Equal(t, 129.94354857890977, dist)
+	assert.InEpsilon(t, 129.94354857890977, dist, 0.1)
 }

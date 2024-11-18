@@ -8,18 +8,18 @@ import (
 )
 
 type Point struct {
-	DateTime    time.Time `db:"unix_time"`
-	Latitude    float64   `db:"latitude"`
-	Longitude   float64   `db:"longitude"`
-	Altitude    int       `db:"altitude"`
-	MsgType     string    `db:"msg_type"`
-	MsgContent  string    `db:"msg_content"`
-	FlightTime  time.Duration
-	TakeOffDist float64
-	CumDist     float64
-	AvgSpeed    float64
-	LegSpeed    float64
-	LegDist     float64
+	DateTime    time.Time     `json:"dateTime"    db:"unix_time"`
+	Latitude    float64       `json:"latitude"    db:"latitude"`
+	Longitude   float64       `json:"longitude"   db:"longitude"`
+	Altitude    int           `json:"altitude"    db:"altitude"`
+	MsgType     string        `json:"msgType"     db:"msg_type"`
+	MsgContent  string        `json:"msgContent"  db:"msg_content"`
+	FlightTime  time.Duration `json:"flightTime"`
+	TakeOffDist float64       `json:"takeOffDist"`
+	CumDist     float64       `json:"cumDist"`
+	AvgSpeed    float64       `json:"avgSpeed"`
+	LegSpeed    float64       `json:"legSpeed"`
+	LegDist     float64       `json:"legDist"`
 }
 
 // Value represent a point in the database.
@@ -48,11 +48,11 @@ func (p *Point) ComputeCumDist(previous *Point) {
 	p.CumDist = previous.CumDist + p.LegDist
 }
 
-func (p *Point) ComputeAvgSpeed(previous *Point) {
+func (p *Point) ComputeAvgSpeed(_ *Point) {
 	// TODO
 }
 
-func (p *Point) ComputeLegSpeed(previous *Point) {
+func (p *Point) ComputeLegSpeed(_ *Point) {
 	// TODO -> legDist / diff datetime previous and current point
 }
 

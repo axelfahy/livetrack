@@ -1,14 +1,12 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"fahy.xyz/livetrack/internal/db"
-
 	"github.com/gorilla/mux"
 )
 
@@ -23,8 +21,6 @@ type Handler struct {
 
 type handlerMetrics interface{}
 
-type emptyHandlerMetrics struct{}
-
 func NewHandler(manager *db.Manager, logger *slog.Logger, metrics handlerMetrics) *Handler {
 	return &Handler{
 		manager: manager,
@@ -33,7 +29,7 @@ func NewHandler(manager *db.Manager, logger *slog.Logger, metrics handlerMetrics
 	}
 }
 
-func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Ping(w http.ResponseWriter, _ *http.Request) {
 	h.logger.Info("Route triggered", "method", "GET", "route", "[/ping]")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte("{\"status\": \"pong\"}"))
@@ -42,7 +38,7 @@ func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetDatesWithCount(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("Route triggered", "method", "GET", "route", "[/dates]")
 
-	dates, counts, err := h.manager.GetDatesWithCount(context.Background(), numberOfDates)
+	dates, counts, err := h.manager.GetDatesWithCount(r.Context(), numberOfDates)
 	if err != nil {
 		h.logger.Error("Error retrieving dates", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -65,7 +61,7 @@ func (h *Handler) GetDatesWithCount(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetPilots(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("Route triggered", "method", "GET", "route", "[/pilots]")
 
-	pilots, err := h.manager.GetAllPilots(context.Background())
+	pilots, err := h.manager.GetAllPilots(r.Context())
 	if err != nil {
 		h.logger.Error("Error retrieving pilots", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -87,7 +83,7 @@ func (h *Handler) GetTracksOfDay(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	tracks, err := h.manager.GetAllTracksOfDay(context.Background(), date)
+	tracks, err := h.manager.GetAllTracksOfDay(r.Context(), date)
 	if err != nil {
 		h.logger.Error("Error retrieving pilots", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

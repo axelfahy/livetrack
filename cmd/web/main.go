@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"fahy.xyz/livetrack/internal/metrics"
-
 	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -107,7 +106,7 @@ func run(env envConfig, logger *slog.Logger) error {
 		ctx, cancel := context.WithTimeout(context.Background(), serverShutdownTimeout)
 		defer cancel()
 
-		if err := httpServer.Shutdown(ctx); err != nil {
+		if err := httpServer.Shutdown(ctx); err != nil { //nolint:contextcheck,lll // This is a bug https://github.com/kkHAIKE/contextcheck/issues/2
 			return fmt.Errorf("shutting down HTTP server: %w", err)
 		}
 

@@ -8,13 +8,13 @@ import (
 	"testing"
 	"time"
 
+	"fahy.xyz/livetrack/internal/db"
+	"fahy.xyz/livetrack/internal/model"
 	_ "github.com/lib/pq"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
-
-	"fahy.xyz/livetrack/internal/db"
-	"fahy.xyz/livetrack/internal/model"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -67,12 +67,12 @@ func TestMain(m *testing.M) {
 	}
 
 	hostAndPort := resource.GetHostPort("5432/tcp")
-	databaseUrl := fmt.Sprintf("postgres://postgres:postgres@%s/tracking?sslmode=disable", hostAndPort)
+	databaseURL := fmt.Sprintf("postgres://postgres:postgres@%s/tracking?sslmode=disable", hostAndPort)
 
 	logger := slog.New(slog.Default().Handler())
 	ctx := context.Background()
 
-	logger.Info("Connecting to database", "url", databaseUrl)
+	logger.Info("Connecting to database", "url", databaseURL)
 
 	if err = resource.Expire(1200); err != nil { // Tell docker to hard kill the container in 120 seconds
 		os.Exit(1)
@@ -81,10 +81,11 @@ func TestMain(m *testing.M) {
 	// Exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	pool.MaxWait = 120 * time.Second
 	if err = pool.Retry(func() error {
-		manager, err = db.NewManager(ctx, databaseUrl, logger, &emptyMetrics{})
+		manager, err = db.NewManager(ctx, databaseURL, logger, &emptyMetrics{})
 		if err != nil {
 			return err
 		}
+
 		return manager.Ping(ctx)
 	}); err != nil {
 		logger.Error("Could not connect to docker", "error", err)
@@ -106,23 +107,29 @@ func TestMain(m *testing.M) {
 }
 
 func TestManager_GetAllPilots(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 	pilots, err := manager.GetAllPilots(ctx)
-	assert.Nil(t, err)
-	assert.Equal(t, 23, len(pilots))
+	require.NoError(t, err)
+	assert.Len(t, pilots, 23)
 	assert.Equal(t, "Alan", pilots[0].Name)
 	assert.Equal(t, "St-Cergue", pilots[0].Home)
 }
 
 func TestManager_GetPilotsFromOrg(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 	pilots, err := manager.GetPilotsFromOrg(ctx, "axlair")
-	assert.Nil(t, err)
-	assert.Equal(t, 1, len(pilots))
+	require.NoError(t, err)
+	assert.Len(t, pilots, 1)
 	assert.Equal(t, "Axel", pilots[0].Name)
 }
 
 func TestManager_WriteTrack(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 	points := []model.Point{
 		{
@@ -143,24 +150,24 @@ func TestManager_WriteTrack(t *testing.T) {
 		},
 	}
 	err := manager.WriteTrack(ctx, "0Xt9612cBl2Qyflho7aO2Pa8bzHzcTugT", points)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	// Insert with no point.
 	err = manager.WriteTrack(ctx, "0Z7eRKM9rCcrima9ic2qqvNFjDjgf87fG", []model.Point{})
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	// Retrieve the track of the given day.
 	pointsA, err := manager.GetTrackOfDay(ctx, "0Xt9612cBl2Qyflho7aO2Pa8bzHzcTugT", time.Date(2023, time.Month(8), 22, 0, 0, 0, 0, time.UTC))
-	assert.Nil(t, err)
-	assert.Equal(t, 2, len(pointsA))
+	require.NoError(t, err)
+	assert.Len(t, pointsA, 2)
 
 	// Retrieve when no track.
 	pointsB, err := manager.GetTrackOfDay(ctx, "0Xt9612cBl2Qyflho7aO2Pa8bzHzcTugT", time.Date(2023, time.Month(8), 23, 0, 0, 0, 0, time.UTC))
-	assert.Nil(t, err)
-	assert.Equal(t, 0, len(pointsB))
+	require.NoError(t, err)
+	assert.Empty(t, pointsB)
 
 	// Retrieve the track since.
 	pointsC, err := manager.GetTrackSince(ctx, "0Xt9612cBl2Qyflho7aO2Pa8bzHzcTugT", time.Date(2023, time.Month(8), 22, 8, 0, 0, 0, time.UTC))
-	assert.Nil(t, err)
-	assert.Equal(t, 1, len(pointsC))
+	require.NoError(t, err)
+	assert.Len(t, pointsC, 1)
 }
