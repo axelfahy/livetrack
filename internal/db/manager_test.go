@@ -83,7 +83,7 @@ func TestMain(m *testing.M) {
 	if err = pool.Retry(func() error {
 		manager, err = db.NewManager(ctx, databaseURL, logger, &emptyMetrics{})
 		if err != nil {
-			return err
+			return fmt.Errorf("creating manager: %w", err)
 		}
 
 		return manager.Ping(ctx)

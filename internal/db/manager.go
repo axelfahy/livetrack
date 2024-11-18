@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -33,11 +34,11 @@ func NewManager(
 ) (*Manager, error) {
 	conn, err := pgxpool.New(ctx, databaseURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating pgxpool: %w", err)
 	}
 
 	if err = conn.Ping(ctx); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("pinging: %w", err)
 	}
 
 	manager := &Manager{
@@ -51,7 +52,11 @@ func NewManager(
 }
 
 func (m *Manager) Ping(ctx context.Context) error {
-	return m.client.Ping(ctx)
+	if err := m.client.Ping(ctx); err != nil {
+		return fmt.Errorf("pinging database: %w", err)
+	}
+
+	return nil
 }
 
 func (m *Manager) Close() {
@@ -61,14 +66,14 @@ func (m *Manager) Close() {
 func (m *Manager) GetAllPilots(ctx context.Context) ([]model.Pilot, error) {
 	rows, err := m.client.Query(ctx, "SELECT id, name, home, orgs, tracker_type FROM pilot")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("querying pilots: %w", err)
 	}
 
 	defer rows.Close()
 
 	pilots, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[model.Pilot])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("collecting rows: %w", err)
 	}
 
 	m.logger.Debug("Pilots retrieved", "pilots", pilots)
@@ -89,7 +94,7 @@ func (m *Manager) GetDatesWithCount(ctx context.Context, limit int) ([]time.Time
 		limit,
 	)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("querying dates with count: %w", err)
 	}
 	defer rows.Close()
 
@@ -101,7 +106,7 @@ func (m *Manager) GetDatesWithCount(ctx context.Context, limit int) ([]time.Time
 
 		var count int
 		if err = rows.Scan(&count, &flightDate); err != nil {
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("scanning row: %w", err)
 		}
 
 		dates = append(dates, flightDate)
@@ -116,14 +121,14 @@ func (m *Manager) GetDatesWithCount(ctx context.Context, limit int) ([]time.Time
 func (m *Manager) GetPilotsFromOrg(ctx context.Context, org string) ([]model.Pilot, error) {
 	rows, err := m.client.Query(ctx, "SELECT id, name, home, orgs, tracker_type FROM pilot WHERE $1=ANY(orgs)", org)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("querying pilots from org %s: %w", org, err)
 	}
 
 	defer rows.Close()
 
 	pilots, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[model.Pilot])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("collecting rows: %w", err)
 	}
 
 	m.logger.Debug("Pilots retrieved", "pilots", pilots, "org", org)
@@ -152,7 +157,7 @@ func (m *Manager) WriteTrack(ctx context.Context, pilotID string, track []model.
 			m.logger.Error("Error writing track", "pilotID", pilotID, "error", err.Code)
 
 			if err.Code != errDuplicateKey {
-				return err
+				return fmt.Errorf("writing track: %w", err)
 			}
 		}
 	}
@@ -171,13 +176,13 @@ func (m *Manager) GetAllTracksOfDay(ctx context.Context, date time.Time) (map[st
 
 	pilots, err := m.GetAllPilots(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting all pilots: %w", err)
 	}
 
 	for _, pilot := range pilots {
 		points, err := m.GetTrackOfDay(ctx, pilot.ID, date)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("getting track of day: %w", err)
 		}
 
 		tracks[pilot.Name] = points
@@ -201,14 +206,14 @@ func (m *Manager) GetTrackOfDay(ctx context.Context, pilotID string, date time.T
 		day,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("querying track of day: %w", err)
 	}
 
 	defer rows.Close()
 
 	points, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[model.Point])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("collecting rows: %w", err)
 	}
 
 	m.logger.Debug("Track retrieved", "pilot", pilotID, "points", points)
@@ -233,14 +238,14 @@ func (m *Manager) GetTrackSince(ctx context.Context, pilotID string, since time.
 		since,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("querying track since %s: %w", since, err)
 	}
 
 	defer rows.Close()
 
 	points, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[model.Point])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("collecting rows: %w", err)
 	}
 
 	m.logger.Debug("Track retrieved", "pilot", pilotID, "points", points)

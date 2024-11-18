@@ -2,6 +2,7 @@ package bot
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/mymmrac/telego"
@@ -23,12 +24,12 @@ type metrics interface {
 func New(channel, token string, logger *slog.Logger, metrics metrics) (*Bot, error) {
 	bot, err := telego.NewBot(token)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating bot: %w", err)
 	}
 	// Retrieve information on the channel.
 	botUser, err := bot.GetMe()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting channel information: %w", err)
 	}
 
 	logger.Debug("Bot", "user", botUser)
@@ -49,7 +50,7 @@ func (bot *Bot) SendMessage(text string) error {
 		ParseMode: telego.ModeMarkdown,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("sending message: %w", err)
 	}
 
 	bot.messages = append(bot.messages, message)

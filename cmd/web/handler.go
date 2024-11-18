@@ -69,14 +69,14 @@ func (h *Handler) getTracksOfDay(ctx context.Context, date string) (pilotData, e
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return pilotData{}, err
+		return pilotData{}, fmt.Errorf("getting tracks: %w", err)
 	}
 
 	req.Header.Set("User-Agent", "Wget/1.13.4 (linux-gnu)")
 
 	resp, err := h.client.Do(req)
 	if err != nil {
-		return pilotData{}, err
+		return pilotData{}, fmt.Errorf("executing request: %w", err)
 	}
 	defer resp.Body.Close()
 
