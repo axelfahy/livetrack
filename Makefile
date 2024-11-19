@@ -34,6 +34,20 @@ lint:
 test:
 	$(GOTEST) ./...
 
+package-api:
+	docker buildx build -f ./Dockerfile \
+		--platform $(BUILDPLATFORM) \
+		--build-arg VERSION=$(VERSION) \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
+		--build-arg GIT_DIRTY=$(GIT_DIRTY) \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-api:$(VERSION) \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-api:$(VERSION_MAJOR).$(VERSION_MINOR) \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-api:$(VERSION_MAJOR) \
+		--load \
+		--target api \
+		.
+
 package-bot:
 	docker buildx build -f ./Dockerfile \
 		--platform $(BUILDPLATFORM) \
@@ -46,6 +60,20 @@ package-bot:
 		-t $(GO_REGISTRY)$(GO_PACKAGE)-bot:$(VERSION_MAJOR) \
 		--load \
 		--target bot \
+		.
+
+package-fetcher:
+	docker buildx build -f ./Dockerfile \
+		--platform $(BUILDPLATFORM) \
+		--build-arg VERSION=$(VERSION) \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
+		--build-arg GIT_DIRTY=$(GIT_DIRTY) \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-fetcher:$(VERSION) \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-fetcher:$(VERSION_MAJOR).$(VERSION_MINOR) \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-fetcher:$(VERSION_MAJOR) \
+		--load \
+		--target fetcher \
 		.
 
 package-web: 
