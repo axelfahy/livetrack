@@ -56,7 +56,7 @@ func NewHandler(endpoint string, logger *slog.Logger, metrics handlerMetrics) *H
 }
 
 type pilotData struct {
-	PilotData string
+	PilotData string `json:"pilotData"`
 }
 
 func (h *Handler) getTracksOfDay(ctx context.Context, date string) (pilotData, error) {
@@ -91,6 +91,7 @@ func (h *Handler) getTracksOfDay(ctx context.Context, date string) (pilotData, e
 			delete(data, pilot)
 		}
 	}
+	h.logger.Debug("Tracks", "data", data)
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {

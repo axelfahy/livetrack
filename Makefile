@@ -6,7 +6,7 @@ GOTEST=$(GOCMD) test
 GOFUMPT=gofumpt
 WSL=wsl
 GOLINT=golangci-lint run
-BUILDPLATFORM=linux/amd64
+BUILDPLATFORM=linux/arm64
 VERSION_MAJOR=$(shell echo $(VERSION) | cut -f1 -d.)
 VERSION_MINOR=$(shell echo $(VERSION) | cut -f2 -d.)
 GIT_COMMIT=$(shell git rev-parse HEAD)
@@ -76,7 +76,7 @@ package-fetcher:
 		--target fetcher \
 		.
 
-package-web: 
+package-web:
 	docker buildx build -f ./Dockerfile \
 		--platform $(BUILDPLATFORM) \
 		--build-arg VERSION=$(VERSION) \

@@ -105,7 +105,7 @@
                 const points = pilotData[pilot];
 
                 // Create a polyline array for connecting points for this pilot
-                const latLngs = points.map(point => [point.Latitude, point.Longitude]);
+                const latLngs = points.map(point => [point.latitude, point.longitude]);
                 console.log("coordonnates: " + latLngs)
 
                 // Get a unique color for this pilot's track
@@ -126,18 +126,18 @@
                 // Add individual markers for each point with a popup showing details
                 points.forEach(point => {
                     console.log("point: " + point)
-                    const marker = L.marker([point.Latitude, point.Longitude]).addTo(map);
+                    const marker = L.marker([point.latitude, point.longitude]).addTo(map);
                     marker.bindPopup(`
                         <strong>${pilot}</strong><br>
-                        DateTime: ${new Date(point.DateTime).toLocaleString()}<br>
-                        Altitude: ${point.Altitude} m<br>
-                        MsgType: ${point.MsgType}<br>
-                        MsgContent: ${point.MsgContent}<br>
-                        AvgSpeed: ${point.AvgSpeed} km/h<br>
-                        LegDist: ${point.LegDist} km
+                        DateTime: ${new Date(point.dateTime).toLocaleString()}<br>
+                        Altitude: ${point.altitude} m<br>
+                        MsgType: ${point.msgType}<br>
+                        MsgContent: ${point.msgContent}<br>
+                        AvgSpeed: ${point.avgSpeed} km/h<br>
+                        LegDist: ${point.legDist} km
                     `);
                     // Add the point to allLatLngs for bounding later
-                    allLatLngs.push([point.Latitude, point.Longitude]);
+                    allLatLngs.push([point.latitude, point.longitude]);
                 });
             });
             console.log("finished drawing points")
