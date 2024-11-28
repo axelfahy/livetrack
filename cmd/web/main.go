@@ -1,86 +1,129 @@
-package web
+package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
-	"fahy.xyz/livetrack/cmd"
-	"fahy.xyz/livetrack/db"
-	"fahy.xyz/livetrack/metrics"
-
+	"fahy.xyz/livetrack/internal/metrics"
 	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/common/version"
+	"github.com/sourcegraph/conc/pool"
 )
 
-type webEnvConfig struct {
-	// TODO
+type envConfig struct {
+	// Logging
+	Port     string         `envconfig:"PORT"      default:"3000" desc:"The port for the web interface"`
+	LogLevel *slog.LevelVar `envconfig:"LOG_LEVEL" default:"info" desc:"The log level"`
+	// Metrics
+	MetricsSubsystem string `envconfig:"METRICS_SUBSYSTEM" default:"web" desc:"The Prometheus subsystem for the metrics"`
+
+	APIEndpoint string `envconfig:"API_ENDPOINT" default:"https://livetrack.fahy.xyz/api/" desc:"The endpoint to retrieve the tracks"`
 }
 
-// enableCORS handles access control and  CORS middleware
-func enableCORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
-}
+const (
+	defaultReadTimeout    = 5 * time.Second
+	defaultWriteTimeout   = 10 * time.Second
+	defaultIdleTimeout    = 30 * time.Second
+	serverShutdownTimeout = 10 * time.Second
+)
 
-func Main(ctx context.Context) {
-	var env webEnvConfig
-	logger, ok := ctx.Value(cmd.LogKey).(*slog.Logger)
-	if !ok {
-		panic("error retrieving logger from context")
-	}
-	logger = logger.With("component", "web")
-
-	metrics, ok := ctx.Value(cmd.MetricsKey).(*metrics.Metrics)
-	if !ok {
-		logger.Error("Error retrieving metrics from context")
-		return
-	}
-
-	manager, ok := ctx.Value(cmd.ManagerKey).(*db.Manager)
-	if !ok {
-		logger.Error("Error retrieving DB manager from context")
-		return
-	}
-
-	router, ok := ctx.Value(cmd.MuxKey).(*mux.Router)
-	if !ok {
-		logger.Error("Error retrieving mux from context")
-		return
-	}
-
+func main() {
+	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
-		logger.Error("error checking env variables", "error", err)
-		return
+		slog.Default().Error("Processing env var", "error", err)
+		os.Exit(1)
 	}
-	logger.Info("Web configuration", "env", env)
 
-	handler := NewHandler(manager, logger.With("component", "handler"), metrics)
-	apiRouter := router.PathPrefix("/api").Subrouter()
+	var handler slog.Handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: env.LogLevel})
 
-	apiRouter.HandleFunc("/ping", handler.Ping).Methods(http.MethodGet)
+	logger := slog.New(handler)
 
-	apiRouter.HandleFunc("/dates", handler.GetDatesWithCount).Methods(http.MethodGet)
-	apiRouter.HandleFunc("/pilots", handler.GetPilots).Methods(http.MethodGet)
-	apiRouter.HandleFunc("/tracks/{date}", handler.GetTracksOfDay).Methods(http.MethodGet)
+	if err := run(env, logger); err != nil {
+		logger.Error("running livetrack-web", "error", err)
+		os.Exit(1)
+	}
+}
 
-	// router.Use(enableCORS)
+func run(env envConfig, logger *slog.Logger) error {
+	logger.Info("Livetrack web is initializing...",
+		"version", version.Version,
+		"revision", version.Revision,
+		"build_date", version.BuildDate,
+		"os", version.GoOS,
+		"os_arch", version.GoArch,
+		"go_version", version.GoVersion,
+	)
 
-	// router.PathPrefix("/").Handler(frontendHandler)
-	logger.Info("Livetrack web module initialized")
-	defer logger.Info("Closing...")
+	logger = logger.With("component", "web")
+	logger.Info("Configuration", "env", env)
 
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	<-sigChan
+	promMetrics, promReg, err := metrics.NewPrometheusMetrics(env.MetricsSubsystem)
+	if err != nil {
+		return fmt.Errorf("creating Prometheus metrics: %w", err)
+	}
+
+	router := mux.NewRouter()
+	router.Handle(metrics.Path, promhttp.HandlerFor(promReg, promhttp.HandlerOpts{}))
+
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
+	ctxPool := pool.New().
+		WithContext(ctx).
+		WithFirstError().
+		WithCancelOnError()
+
+	httpServer := http.Server{
+		Addr:         fmt.Sprint(":", env.Port),
+		Handler:      router,
+		ReadTimeout:  defaultReadTimeout,
+		WriteTimeout: defaultWriteTimeout,
+		IdleTimeout:  defaultIdleTimeout,
+	}
+
+	logger.Debug("HTTP server initialized")
+
+	ctxPool.Go(func(_ context.Context) error {
+		if err := httpServer.ListenAndServe(); err != nil {
+			return fmt.Errorf("HTTP server crashed: %w", err)
+		}
+
+		return nil
+	})
+
+	ctxPool.Go(func(ctx context.Context) error {
+		<-ctx.Done()
+		logger.Debug("Context is finished")
+
+		ctx, cancel := context.WithTimeout(context.Background(), serverShutdownTimeout)
+		defer cancel()
+
+		if err := httpServer.Shutdown(ctx); err != nil { //nolint:contextcheck,lll // This is a bug https://github.com/kkHAIKE/contextcheck/issues/2
+			return fmt.Errorf("shutting down HTTP server: %w", err)
+		}
+
+		return nil
+	})
+
+	handler := NewHandler(env.APIEndpoint, logger.With("component", "handler"), promMetrics)
+
+	router.HandleFunc("/", handler.Home)
+	router.HandleFunc("/dates", handler.GetDates)
+	router.HandleFunc("/tracks/{date}", handler.GetTracks)
+
+	logger.Info("Livetrack web tracking initialized")
+
+	if err = ctxPool.Wait(); err != nil {
+		return fmt.Errorf("goroutine pool: %w", err)
+	}
+
+	return nil
 }

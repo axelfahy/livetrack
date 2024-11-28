@@ -11,11 +11,9 @@ import (
 	"time"
 
 	"fahy.xyz/livetrack/internal/db"
-	"fahy.xyz/livetrack/internal/fetcher"
 	"fahy.xyz/livetrack/internal/metrics"
-	"fahy.xyz/livetrack/internal/model"
+	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/procyon-projects/chrono"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/version"
 	"github.com/sourcegraph/conc/pool"
@@ -31,20 +29,11 @@ type envConfig struct {
 	PostgresDBName   string `envconfig:"POSTGRES_DB_NAME"  default:"tracking"  desc:"The postgres database name"`
 	PostgresUser     string `envconfig:"POSTGRES_USER"     required:"true"     desc:"The postgres user"`
 	PostgresPassword string `envconfig:"POSTGRES_PASSWORD" required:"true"     desc:"The postgres password"`
-	// Fetchers
-	SpotBaseURL   string `envconfig:"SPOT_BASE_URL"   default:"https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/" desc:"The base URL for the SPOT tracking"`
-	GarminBaseURL string `envconfig:"GARMIN_BASE_URL" default:"https://share.garmin.com/Feed/Share/"                                        desc:"The base URL for the garmin tracking"`
-	// Behaviour settings
-	FetchInterval time.Duration `envconfig:"FETCH_INTERVAL" default:"4m" desc:"The interval between two fetches"`
 	// Metrics
-	MetricsSubsystem string `envconfig:"METRICS_SUBSYSTEM" default:"fetcher" desc:"The Prometheus subsystem for the metrics"`
+	MetricsSubsystem string `envconfig:"METRICS_SUBSYSTEM" default:"api" desc:"The Prometheus subsystem for the metrics"`
 }
 
 const (
-	garminTracker = "garmin"
-	spotTracker   = "spot"
-	fetchDelay    = 5 * time.Second
-
 	defaultReadTimeout    = 5 * time.Second
 	defaultWriteTimeout   = 10 * time.Second
 	defaultIdleTimeout    = 30 * time.Second
@@ -63,14 +52,13 @@ func main() {
 	logger := slog.New(handler)
 
 	if err := run(env, logger); err != nil {
-		logger.Error("running livetrack-fetcher", "error", err)
+		logger.Error("running livetrack-api", "error", err)
 		os.Exit(1)
 	}
 }
 
-//nolint:cyclop // To be refactored.
 func run(env envConfig, logger *slog.Logger) error {
-	logger.Info("Livetrack fetcher is initializing...",
+	logger.Info("Livetrack api is initializing...",
 		"version", version.Version,
 		"revision", version.Revision,
 		"build_date", version.BuildDate,
@@ -79,7 +67,7 @@ func run(env envConfig, logger *slog.Logger) error {
 		"go_version", version.GoVersion,
 	)
 
-	logger = logger.With("component", "fetcher")
+	logger = logger.With("component", "api")
 	logger.Info("Configuration", "env", env)
 
 	promMetrics, promReg, err := metrics.NewPrometheusMetrics(env.MetricsSubsystem)
@@ -87,7 +75,7 @@ func run(env envConfig, logger *slog.Logger) error {
 		return fmt.Errorf("creating Prometheus metrics: %w", err)
 	}
 
-	mux := http.NewServeMux()
+	mux := mux.NewRouter()
 	mux.Handle(metrics.Path, promhttp.HandlerFor(promReg, promhttp.HandlerOpts{}))
 	logger.Debug("Metrics initialized")
 
@@ -145,70 +133,16 @@ func run(env envConfig, logger *slog.Logger) error {
 
 	logger.Debug("DB manager initialized")
 
-	pilots, err := manager.GetAllPilots(ctx)
-	if err != nil {
-		return fmt.Errorf("retrieving pilots: %w", err)
-	}
+	handler := NewHandler(manager, logger.With("component", "handler"), promMetrics)
+	apiRouter := mux.PathPrefix("/api").Subrouter()
 
-	garminFetcher := fetcher.NewGarminFetcher(env.GarminBaseURL, logger.With("component", "garmin-fetcher"), promMetrics)
-	spotFetcher := fetcher.NewSpotFetcher(env.SpotBaseURL, logger.With("component", "spot-fetcher"), promMetrics)
+	apiRouter.HandleFunc("/ping", handler.Ping).Methods(http.MethodGet)
 
-	taskScheduler := chrono.NewDefaultTaskScheduler()
+	apiRouter.HandleFunc("/dates", handler.GetDatesWithCount).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/pilots", handler.GetPilots).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/tracks/{date}", handler.GetTracksOfDay).Methods(http.MethodGet)
 
-	// Reload the pilots list each day.
-	_, err = taskScheduler.ScheduleWithCron(func(ctx context.Context) {
-		logger.Info("Reloading pilots", "time", time.Now())
-
-		pilots, err = manager.GetAllPilots(ctx)
-		if err != nil {
-			logger.Error("Retrieving pilots", "error", err)
-
-			return
-		}
-	}, "0 0 0 * * *")
-
-	_, err = taskScheduler.ScheduleWithFixedDelay(func(ctx context.Context) {
-		logger.Info("Fetching tracker sources", "time", time.Now())
-
-		for _, pilot := range pilots {
-			var points []model.Point
-
-			switch pilot.TrackerType {
-			case garminTracker:
-				points, err = garminFetcher.Fetch(ctx, pilot.ID)
-				if err != nil {
-					logger.Error("Retrieving tracker for garmin", "ID", pilot.ID, "error", err)
-
-					continue
-				}
-			case spotTracker:
-				points, err = spotFetcher.Fetch(ctx, pilot.ID)
-				if err != nil {
-					logger.Error("Retrieving tracker for spot", "ID", pilot.ID, "error", err)
-
-					continue
-				}
-			default:
-				logger.Error("Unknown tracker", "pilot", pilot)
-
-				continue
-			}
-
-			logger.Debug("Fetched", "points", points)
-
-			if len(points) > 0 {
-				if err = manager.WriteTrack(ctx, pilot.ID, points); err != nil {
-					logger.Error("Writing track", "ID", pilot.ID, "track", points, "error", err)
-				}
-			}
-
-			time.Sleep(fetchDelay)
-		}
-	}, env.FetchInterval)
-
-	if err == nil {
-		logger.Info("Task has been scheduled successfully")
-	}
+	logger.Info("Livetrack api module initialized")
 
 	if err = ctxPool.Wait(); err != nil {
 		return fmt.Errorf("goroutine pool: %w", err)
