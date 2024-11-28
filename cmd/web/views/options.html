@@ -1,0 +1,3 @@
+{{range .}}
+    <option hx-get="/tracks/{{.Date}}" hx-target="#map-wrap" {{if .Selected}}selected{{end}}>{{.Label}}</option>
+{{end}}

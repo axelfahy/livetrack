@@ -4,35 +4,44 @@ run:
   modules-download-mode: readonly
 
 output:
-  format: colored-line-number
+  formats:
+    - format: colored-line-number
   print-issued-lines: true
   print-linter-name: true
+
+linters-settings:
+  varnamelen:
+    ignore-type-assert-ok: true
+    ignore-decls:
+      - "w http.ResponseWriter"
+      - "r *http.Request"
+      - "wg *sync.WaitGroup"
+  tagalign:
+    sort: false
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - lll
+        - gochecknoglobals
+    - source: "`.*`"
+      linters:
+      - lll # Because of the struct tags
 
 linters:
   enable-all: true
   disable:
-  - scopelint # Disabled since deprecated
-  - structcheck # Disabled since deprecated
-  - deadcode # Disabled since deprecated
-  - varcheck # Disabled since deprecated
-  - golint # Disabled since deprecated
-  - maligned # Disabled since deprecated
-  - nosnakecase # Disabled since deprecated
-  - interfacer # Disabled since deprecated
-  - ifshort # Disabled since deprecated
-  - exhaustivestruct # Disabled since deprecated
-  #- depguard
-  - exhaustruct
-  #- tagliatelle
-  #- gomodguard
-  #- wrapcheck # enable after initial fixes
-  #- goerr113 # enable after initial fixes
-  #- funlen # enable after initial fixes
-  #- nestif # enable after initial fixes
-  #- cyclop # enable after initial fixes
-  #- gochecknoglobals # enable after initial fixes
-  - gomnd # Disable magic numbers check
-  #- varnamelen # enable after initial fixes
-  #- testpackage # enable after initial fixes
-  #- godox # enable after initial fixes
+    - depguard
+    - dupl
+    - errorlint
+    - exhaustruct
+    - exportloopref # Deprecated
+    - funlen
+    - gocognit
+    - godox
+    - mnd
+    - noctx
+    - nosprintfhostport
+    - testpackage
 
