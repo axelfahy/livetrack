@@ -86,10 +86,10 @@ func (m *Manager) GetAllPilots(ctx context.Context) ([]model.Pilot, error) {
 func (m *Manager) GetDatesWithCount(ctx context.Context, limit int) ([]time.Time, []int, error) {
 	rows, err := m.client.Query(
 		ctx,
-		`SELECT COUNT(DISTINCT pilot_id), unix_time::date 
-		 FROM track 
-		 GROUP BY unix_time::date 
-		 ORDER BY unix_time 
+		`SELECT COUNT(DISTINCT pilot_id), unix_time::date
+		 FROM track
+		 GROUP BY unix_time::date
+		 ORDER BY unix_time
 		 DESC LIMIT $1`,
 		limit,
 	)
@@ -198,9 +198,9 @@ func (m *Manager) GetTrackOfDay(ctx context.Context, pilotID string, date time.T
 
 	rows, err := m.client.Query(
 		ctx,
-		`SELECT unix_time, latitude, longitude, altitude, msg_type, msg_content 
-		 FROM track 
-		 WHERE pilot_id = $1 AND DATE(unix_time) = $2 
+		`SELECT unix_time, latitude, longitude, altitude, msg_type, msg_content
+		 FROM track
+		 WHERE pilot_id = $1 AND DATE(unix_time) = $2
 		 ORDER BY unix_time`,
 		pilotID,
 		day,
@@ -216,6 +216,9 @@ func (m *Manager) GetTrackOfDay(ctx context.Context, pilotID string, date time.T
 		return nil, fmt.Errorf("collecting rows: %w", err)
 	}
 
+	// Compute stats for each opoint
+	points = model.ComputeStatistics(points)
+
 	m.logger.Debug("Track retrieved", "pilot", pilotID, "points", points)
 	m.metrics.TrackRetrieved()
 	// TODO: computed stats (flight time, takeoffdist, cumdist, avgspeed, legspeed, legdist
@@ -230,9 +233,9 @@ func (m *Manager) GetTrackSince(ctx context.Context, pilotID string, since time.
 
 	rows, err := m.client.Query(
 		ctx,
-		`SELECT unix_time, latitude, longitude, altitude, msg_type, msg_content 
-		 FROM track 
-		 WHERE pilot_id = $1 AND unix_time > $2 
+		`SELECT unix_time, latitude, longitude, altitude, msg_type, msg_content
+		 FROM track
+		 WHERE pilot_id = $1 AND unix_time > $2
 		 ORDER BY unix_time`,
 		pilotID,
 		since,

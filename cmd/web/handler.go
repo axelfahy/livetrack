@@ -91,6 +91,7 @@ func (h *Handler) getTracksOfDay(ctx context.Context, date string) (pilotData, e
 			delete(data, pilot)
 		}
 	}
+
 	h.logger.Debug("Tracks", "data", data)
 
 	jsonData, err := json.Marshal(data)
