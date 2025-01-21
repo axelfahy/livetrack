@@ -55,34 +55,36 @@ func NewHandler(endpoint string, logger *slog.Logger, metrics handlerMetrics) *H
 	}
 }
 
-type pilotData struct {
-	PilotData string `json:"pilotData"`
-}
-
-func (h *Handler) getTracksOfDay(ctx context.Context, date string) (pilotData, error) {
+// getTracksOfDay retrieves the tracks of the given day.
+//
+// Pilots without points are removed from the output.
+// It structure is Marshalled and return as a string.
+func (h *Handler) getTracksOfDay(ctx context.Context, date string) (string, error) {
 	url, err := url.JoinPath(h.endpoint, "/tracks/"+date)
 	if err != nil {
-		return pilotData{}, fmt.Errorf("parsing URL: %w", err)
+		return "", fmt.Errorf("parsing URL: %w", err)
 	}
 
 	h.logger.Info("[GET]", "url", url)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return pilotData{}, fmt.Errorf("getting tracks: %w", err)
+		return "", fmt.Errorf("getting tracks: %w", err)
 	}
 
 	req.Header.Set("User-Agent", "Wget/1.13.4 (linux-gnu)")
 
 	resp, err := h.client.Do(req)
 	if err != nil {
-		return pilotData{}, fmt.Errorf("executing request: %w", err)
+		return "", fmt.Errorf("executing request: %w", err)
 	}
 	defer resp.Body.Close()
 
+	h.logger.Info("body", "body", resp.Body)
+
 	data := make(map[string][]model.Point)
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return pilotData{}, fmt.Errorf("parsing tracks: %w", err)
+		return "", fmt.Errorf("parsing tracks: %w", err)
 	}
 
 	// Filter out empty tracks.
@@ -92,39 +94,43 @@ func (h *Handler) getTracksOfDay(ctx context.Context, date string) (pilotData, e
 		}
 	}
 
-	h.logger.Debug("Tracks", "data", data)
+	h.logger.DebugContext(ctx, "Tracks", "data", data)
 
+	// Convert the JSON data back to a string
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		return pilotData{}, fmt.Errorf("encoding response: %w", err)
+		return "", err
 	}
 
-	return pilotData{PilotData: string(jsonData)}, nil
+	return string(jsonData), nil
 }
 
-// home retrieves the track of the current day.
+// Home retrieves the track of the current day.
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info("[/]")
+	h.logger.InfoContext(r.Context(), "[/]")
 
 	today := time.Now().Format("2006-01-02")
 
-	tmplData, err := h.getTracksOfDay(r.Context(), today)
+	jsonData, err := h.getTracksOfDay(r.Context(), today)
 	if err != nil {
 		h.logger.ErrorContext(r.Context(), "Retrieving tracks", "date", today, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	if err := h.template.ExecuteTemplate(w, "index.html", tmplData); err != nil {
+	h.logger.DebugContext(r.Context(), "Tracks", "date", "today", "json", jsonData)
+
+	if err := h.template.ExecuteTemplate(w, "index.html", jsonData); err != nil {
+		h.logger.ErrorContext(r.Context(), "Executing template", "error", err)
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 	}
 }
 
-// getDates retrieves the last 5 dates having tracks.
+// GetDates retrieves the last 5 dates having tracks.
 //
 // The date are templates as options in a selected box.
 // The first entry is "Today" even if there is no entry for the current day.
 func (h *Handler) GetDates(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info("[/dates]")
+	h.logger.InfoContext(r.Context(), "[/dates]")
 
 	url, err := url.JoinPath(h.endpoint, "/dates")
 	if err != nil {
@@ -161,7 +167,7 @@ func (h *Handler) GetDates(w http.ResponseWriter, r *http.Request) {
 	today := time.Now().Format("2006-01-02")
 
 	selectedDate := r.URL.Query().Get("date")
-	h.logger.Info("Get dates", "dates", dates, "selected", selectedDate)
+	h.logger.InfoContext(r.Context(), "Get dates", "dates", dates, "selected", selectedDate)
 
 	options := []Option{
 		{Date: today, Label: "Today", Selected: selectedDate == today || selectedDate == ""},
@@ -178,25 +184,28 @@ func (h *Handler) GetDates(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set("Content-Type", "text/html")
-
 	if err := h.template.ExecuteTemplate(w, "options.html", options); err != nil {
 		h.logger.ErrorContext(r.Context(), "Executing template", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
+// GetTracks retrieves the track of the given date.
 func (h *Handler) GetTracks(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	date := vars["date"]
+	h.logger.InfoContext(r.Context(), fmt.Sprintf("[/tracks/%s]", date))
 
-	tmplData, err := h.getTracksOfDay(r.Context(), date)
+	jsonData, err := h.getTracksOfDay(r.Context(), date)
 	if err != nil {
 		h.logger.ErrorContext(r.Context(), "Retrieving tracks", "date", date, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	if err := h.template.ExecuteTemplate(w, "index.html", tmplData); err != nil {
+	h.logger.DebugContext(r.Context(), "Tracks", "date", date, "json", jsonData)
+
+	if err := h.template.ExecuteTemplate(w, "index.html", jsonData); err != nil {
+		h.logger.ErrorContext(r.Context(), "Executing template", "error", err)
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 	}
 }

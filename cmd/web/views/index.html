@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Livetracking</title>
-    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/leaflet-svgicon@0.0.2/index.min.js"></script>
@@ -61,10 +62,12 @@
             position: relative;
             width: 30px;
             height: 40px;
-            text-align: center;
             color: white;
             font-size: 14px;
             font-weight: bold;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 20px 20px 20px 20px; /* Makes the top circular */
         }
 
         .custom-marker .icon-body {
@@ -77,16 +80,20 @@
             line-height: 30px;
         }
 
-        .custom-marker .icon-tail {
+        .custom-marker::after {
+            content: '';
             position: absolute;
             bottom: -10px;
-            left: 10px;
-            width: 0;
-            height: 0;
-            border-style: solid;
-            border-width: 10px 5px 0 5px;
-            border-color: var(--marker-color, #0078ff) transparent transparent transparent;
-            z-index: 1;
+            left: 15px;
+            width: 10px;
+            height: 10px;
+            background-color: inherit; /* Use the same color as the main marker */
+            transform: rotate(-45deg);
+            z-index: -1;
+        }
+
+        .custom-marker-number {
+            transform: rotate(-45deg); /* Corrects the rotation for the number */
         }
 
         .leaflet-div-icon {
@@ -104,28 +111,38 @@
 </head>
 <body>
     <div id="map-wrap">
-        <select
-            id="date-select"
-            name="date"
-            hx-get="/dates"
-            hx-trigger="load"
-            hx-target="#date-select"
-            hx-vals="date"
-            hx-swap="innerHTML">
-        </select>
-
         <div id="map"></div>
 
         <div id="legend"></div>
     </div>
 
+    <select
+        id="date-select"
+        name="date"
+        hx-get="/dates"
+        hx-trigger="load once"
+        hx-target="#date-select"
+        hx-vals='js:{"date": getDate()}'
+        hx-swap="innerHTML"
+        x-data
+        @change="$tellHTMXOptionChanged($event)">
+    </select>
+
     <script>
+        function getDate() {
+            const selectElement = document.getElementById("date-select");
+            if (selectElement && selectElement.options.length > 0) {
+                return selectElement.options[selectElement.selectedIndex].value;
+            }
+            return "";
+        }
+
+
         var START_COLOR = '#5f65d3'
         var OK_COLOR = '#21772a'
         // Initialize the map, setting a default view
         var map = L.map('map', {zoomControl: false}).setView([51.505, -0.09], 3); // Initial latitude, longitude, and zoom
         var pilotLayers = [];
-        var legend = document.getElementById("legend");
 
         // Zoom buttons at bottom left.
         L.control.zoom({
@@ -157,14 +174,18 @@
             // Clear existing layers
             pilotLayers.forEach(layer => map.removeLayer(layer));
             pilotLayers = [];
-            legend.innerHTML = "";
+            const legend = document.getElementById("legend");
+            legend.style.display = "none";
+            legend.textContent = "";
 
             // Array to store all coordinates for fitting bounds
             const allLatLngs = [];
 
-            Object.keys(pilotData).forEach((pilot, index) => {
-                const points = pilotData[pilot];
+            let pilotMap = new Map(Object.entries(pilotData));
 
+            console.log("Updating map with new data:", pilotMap);
+
+            Array.from(pilotMap.entries()).forEach(([pilot, points], index) => {
                 // Create a polyline array for connecting points for this pilot
                 const latLngs = points.map(point => [point.latitude, point.longitude]);
 
@@ -186,39 +207,27 @@
                         pointColor = START_COLOR;
                         pointText = "ST"
                     }
-                    // Create an SVG icon using the Leaflet-SVGIcon library
-                    //const customIcon = L.svgIcon({
-                    //    circleFillColor: pointColor,
-                    //    circleStrokeColor: "black",
-                    //    circleStrokeWidth: 2,
-                    //    circleRatio: 0.5, // Adjusts the circle's size relative to the marker size
-                    //    iconSize: [30, 30], // Size of the icon
-                    //});
 
-                    // Add the marker to the map
-                    //var marker = new L.Marker.SVGMarker([point.latitude, point.longitude]);
-
-                    //const marker = L.marker([point.latitude, point.longitude], { icon: customIcon }).addTo(map);
-                    // Create a custom DivIcon
                     const icon = L.divIcon({
-                        className: 'custom-marker',
-                        html: `
-                            <div class="icon-body" style="--marker-color: ${pointColor};">
-                                ${pointText}
-                            </div>
-                            <div class="icon-tail" style="--marker-color: ${pointColor};"></div>
-                            `,
-                        iconSize: [30, 40],
-                        iconAnchor: [15, 40], // Anchor point at the tip of the tail
+                        className: 'leaflet-div-icon',
+                        html: `<div style="background-color: ${pointColor};">${pointText}</div>`,
+                        html: `<div style="
+                            background-color: ${pointColor};
+                            width: 100%;
+                            height: 100%;
+                            border-radius: 50%;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;">
+                            ${pointText}
+                        </div>`,
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15],
                     });
 
                     // Add the marker to the map
                     const marker = L.marker([point.latitude, point.longitude], { icon }).addTo(map);
 
-                    // Change the color
-//                    marker.getElement().background= pointColor;
-
-                    //const marker = L.marker([point.latitude, point.longitude]).addTo(map);
                     marker.bindPopup(`
                         <strong>${pilot}</strong><br>
                         DateTime: ${new Date(point.dateTime).toLocaleString()}<br>
@@ -229,12 +238,12 @@
                         AvgSpeed: ${point.avgSpeed} km/h<br>
                         LegDist: ${point.legDist} km
                     `);
+
                     // Add the point to allLatLngs for bounding later
                     allLatLngs.push([point.latitude, point.longitude]);
                 });
 
                 const lastPoint = points[points.length-1]
-                console.log("Last point:" + points[points.length-1])
 
                 // Add each pilot to the legend with their color
                 const legendItem = document.createElement("div");
@@ -249,42 +258,56 @@
                 `;
                 legend.appendChild(legendItem);
             });
-            console.log("finished drawing points")
+            console.log("Finished drawing points")
 
             // Only fit bounds if there are points
             if (allLatLngs.length > 0) {
+                legend.style.display = "flex";
                 map.fitBounds(allLatLngs);
             }
         }
 
         // Initial data from Go server
-        var initialData = JSON.parse(`{{ .PilotData }}`);
+        var initialData = JSON.parse(`{{ . }}`);
+        console.log("Init data: ", initialData);
         updateMapData(initialData);
-
-        // Handle updates from htmx
-        document.body.addEventListener('htmx:afterSwap', (e) => {
-            if (e.detail.target.id === "map-wrap" ) {
-                console.log("New data: " + newData);
-                const newData = JSON.parse(e.detail.xhr.responseText);
-                updateMapData(newData);
-            }
-        });
-
-        // Set the hx-get URL with the selected value on load
-        //document.addEventListener("DOMContentLoaded", function() {
-        //    const selectElement = document.getElementById("date-select");
-        //    const selectedDate = selectElement.value;
-
-        //    // Update hx-get URL to include the selected date as a query parameter
-        //    selectElement.setAttribute("hx-get", `/dates?date=${encodeURIComponent(selectedDate)}`);
-        //    console.log("Calling")
-        //
-        //    // Trigger the initial load request with the updated hx-get URL
-        //    htmx.trigger(selectElement, "load");
-        //});
 
         // Make map responsive to window resizing
         window.addEventListener('resize', () => map.invalidateSize());
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.magic('tellHTMXOptionChanged', (el) => {
+                // This is needed for cross-browser compatability for when a <select> changes
+                return (event) => {
+                    function renderXPathSelector(value) {
+                    return `.//option[contains(., '${value}')]`
+                    }
+
+                    function getChosenOption(value) {
+                    return document.evaluate(renderXPathSelector(value), el).iterateNext()
+                    }
+
+                    const selectedOption = el.querySelector(`[value="${el.value}"]`) ||
+                    getChosenOption(event.target.value)
+                    htmx.trigger(selectedOption, 'click')
+
+                    targetDescription = htmx.closest(selectedOption, '[hx-target]').attributes['hx-target'].value
+                    if (targetDescription === 'this') {
+                    target = htmx.closest(selectedOption, '[hx-target]')
+                    }
+                    else if (targetDescription.startsWith('closest')) {
+                    selector = targetDescription.split(' ')[1]
+                    target = htmx.closest(selector)
+                    }
+                    else {
+                    target = htmx.find(targetDescription)
+                    }
+
+                    htmx.ajax('GET', selectedOption.attributes['hx-get'].value, target)
+                }
+            })
+
+        })
     </script>
 </body>
 </html>
