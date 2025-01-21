@@ -36,37 +36,53 @@ func (p *Point) GetItineraryURL() string {
 
 // TODO: find better names
 // TODO: assert that some values exist.
-func (p *Point) ComputeFlightTime(previous *Point) {
-	p.FlightTime = p.DateTime.Sub(previous.DateTime)
+func (p *Point) ComputeFlightTime(start Point) {
+	p.FlightTime = p.DateTime.Sub(start.DateTime)
 }
 
-func (p *Point) ComputeTakeOffDist(start *Point) {
+func (p *Point) ComputeTakeOffDist(start Point) {
 	p.TakeOffDist = distance(start.Latitude, start.Longitude, p.Latitude, p.Longitude)
 }
 
-func (p *Point) ComputeCumDist(previous *Point) {
+func (p *Point) ComputeCumDist(previous Point) {
 	p.CumDist = previous.CumDist + p.LegDist
 }
 
-func (p *Point) ComputeAvgSpeed(_ *Point) {
-	// TODO
+func (p *Point) ComputeAvgSpeed() {
+	p.AvgSpeed = p.CumDist / p.FlightTime.Hours()
 }
 
-func (p *Point) ComputeLegSpeed(_ *Point) {
+func (p *Point) ComputeLegSpeed(_ Point) {
 	// TODO -> legDist / diff datetime previous and current point
 }
 
-func (p *Point) ComputeLegDist(previous *Point) {
+func (p *Point) ComputeLegDist(previous Point) {
 	p.LegDist = distance(previous.Latitude, previous.Longitude, p.Latitude, p.Longitude)
 }
 
-func ComputeStatistics([]Point) ([]Point, error) {
-	// point 1: all zero
-	// iterate from point 2 to the end
-	// compute stats between each points.
-	// OR
-	// take point 0 a base, and have diff function between points -> YES
-	return nil, nil
+func ComputeStatistics(points []Point) []Point {
+	pointsWithStats := []Point{}
+
+	for i, point := range points {
+		// Skip the first point.
+		if i == 0 {
+			pointsWithStats = append(pointsWithStats, points[0])
+
+			continue
+		}
+
+		previous := pointsWithStats[i-1]
+
+		point.ComputeFlightTime(points[0])
+		point.ComputeTakeOffDist(points[0])
+		point.ComputeLegDist(previous)
+		point.ComputeCumDist(previous)
+		point.ComputeAvgSpeed()
+
+		pointsWithStats = append(pointsWithStats, point)
+	}
+
+	return pointsWithStats
 }
 
 func distance(lat1 float64, lng1 float64, lat2 float64, lng2 float64) float64 {

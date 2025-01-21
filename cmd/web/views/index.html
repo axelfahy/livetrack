@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Livetracking</title>
-    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-svgicon@0.0.2/index.min.js"></script>
+    <script src="svg-icon.js" type="text/plain"></script>
+
     <style>
         html, body {
             height: 100%;
@@ -18,7 +22,7 @@
             width: 100%;
             height: 100vh;
         }
-        
+
         #map {
 		    position: absolute;
             width: 100%;
@@ -26,17 +30,17 @@
         }
 
         #date-select {
-            position: absolute; 
-            top: 20px; 
-            left: 30px; 
-            z-index: 1000; 
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            z-index: 1000;
         }
 
         #legend {
             position: absolute;
             top: 20px;
             left: 200px;
-            z-index: 1000; 
+            z-index: 1000;
             background-color: rgba(255, 255, 255, 0.9);
             padding: 10px;
             border-radius: 5px;
@@ -53,30 +57,92 @@
             margin-right: 8px;
             border-radius: 2px;
         }
+
+        .custom-marker {
+            position: relative;
+            width: 30px;
+            height: 40px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 20px 20px 20px 20px; /* Makes the top circular */
+        }
+
+        .custom-marker .icon-body {
+            background-color: var(--marker-color, #0078ff);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            position: relative;
+            z-index: 2;
+            line-height: 30px;
+        }
+
+        .custom-marker::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 15px;
+            width: 10px;
+            height: 10px;
+            background-color: inherit; /* Use the same color as the main marker */
+            transform: rotate(-45deg);
+            z-index: -1;
+        }
+
+        .custom-marker-number {
+            transform: rotate(-45deg); /* Corrects the rotation for the number */
+        }
+
+        .leaflet-div-icon {
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border: 2px solid white;
+        }
     </style>
 </head>
 <body>
     <div id="map-wrap">
-        <select 
-            id="date-select" 
-            name="date"
-            hx-get="/dates" 
-            hx-trigger="load" 
-            hx-target="#date-select" 
-            hx-vals="date"
-            hx-swap="innerHTML">
-        </select>
-
         <div id="map"></div>
 
         <div id="legend"></div>
     </div>
 
+    <select
+        id="date-select"
+        name="date"
+        hx-get="/dates"
+        hx-trigger="load once"
+        hx-target="#date-select"
+        hx-vals='js:{"date": getDate()}'
+        hx-swap="innerHTML"
+        x-data
+        @change="$tellHTMXOptionChanged($event)">
+    </select>
+
     <script>
+        function getDate() {
+            const selectElement = document.getElementById("date-select");
+            if (selectElement && selectElement.options.length > 0) {
+                return selectElement.options[selectElement.selectedIndex].value;
+            }
+            return "";
+        }
+
+
+        var START_COLOR = '#5f65d3'
+        var OK_COLOR = '#21772a'
         // Initialize the map, setting a default view
         var map = L.map('map', {zoomControl: false}).setView([51.505, -0.09], 3); // Initial latitude, longitude, and zoom
         var pilotLayers = [];
-        var legend = document.getElementById("legend");
 
         // Zoom buttons at bottom left.
         L.control.zoom({
@@ -92,90 +158,156 @@
             '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000'
         ];
 
+        // convertDurationToTime converts nanoseconds duration to a string format hh:mm:ss.
+        function convertDurationtoTime(duration) {
+            dateObj = new Date(duration / 1000000);
+            hours = dateObj.getUTCHours();
+            minutes = dateObj.getUTCMinutes();
+            seconds = dateObj.getSeconds();
+
+            return hours.toString().padStart(2, '0')
+                + ':' + minutes.toString().padStart(2, '0')
+                + ':' + seconds.toString().padStart(2, '0');
+        }
+
         function updateMapData(pilotData) {
             // Clear existing layers
             pilotLayers.forEach(layer => map.removeLayer(layer));
             pilotLayers = [];
-            legend.innerHTML = "";
+            const legend = document.getElementById("legend");
+            legend.style.display = "none";
+            legend.textContent = "";
 
             // Array to store all coordinates for fitting bounds
             const allLatLngs = [];
 
-            Object.keys(pilotData).forEach((pilot, index) => {
-                const points = pilotData[pilot];
+            let pilotMap = new Map(Object.entries(pilotData));
 
+            console.log("Updating map with new data:", pilotMap);
+
+            Array.from(pilotMap.entries()).forEach(([pilot, points], index) => {
                 // Create a polyline array for connecting points for this pilot
                 const latLngs = points.map(point => [point.latitude, point.longitude]);
-                console.log("coordonnates: " + latLngs)
 
                 // Get a unique color for this pilot's track
                 const color = colors[index % colors.length];
 
                 // Draw polyline to represent the track
                 const polyline = L.polyline(latLngs, { color: color }).addTo(map);
-                console.log("polyline: " + polyline)
-
-                // Add each pilot to the legend with their color
-                const legendItem = document.createElement("div");
-                legendItem.innerHTML = `
-                    <span class="color-box" style="background-color: ${color};"></span>
-                    ${pilot}
-                `;
-                legend.appendChild(legendItem);
 
                 // Add individual markers for each point with a popup showing details
-                points.forEach(point => {
-                    console.log("point: " + point)
-                    const marker = L.marker([point.latitude, point.longitude]).addTo(map);
+                points.forEach((point, i) => {
+                    pointColor = color;
+                    pointText = i
+                    if (point.msgType == 'OK') {
+                        pointColor = OK_COLOR;
+                        pointText = "OK"
+                    }
+                    if (i == 0) {
+                        pointColor = START_COLOR;
+                        pointText = "ST"
+                    }
+
+                    const icon = L.divIcon({
+                        className: 'leaflet-div-icon',
+                        html: `<div style="background-color: ${pointColor};">${pointText}</div>`,
+                        html: `<div style="
+                            background-color: ${pointColor};
+                            width: 100%;
+                            height: 100%;
+                            border-radius: 50%;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;">
+                            ${pointText}
+                        </div>`,
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15],
+                    });
+
+                    // Add the marker to the map
+                    const marker = L.marker([point.latitude, point.longitude], { icon }).addTo(map);
+
                     marker.bindPopup(`
                         <strong>${pilot}</strong><br>
                         DateTime: ${new Date(point.dateTime).toLocaleString()}<br>
                         Altitude: ${point.altitude} m<br>
                         MsgType: ${point.msgType}<br>
                         MsgContent: ${point.msgContent}<br>
+                        CumulativeDist: ${point.cumDist} km<br>
                         AvgSpeed: ${point.avgSpeed} km/h<br>
                         LegDist: ${point.legDist} km
                     `);
+
                     // Add the point to allLatLngs for bounding later
                     allLatLngs.push([point.latitude, point.longitude]);
                 });
+
+                const lastPoint = points[points.length-1]
+
+                // Add each pilot to the legend with their color
+                const legendItem = document.createElement("div");
+                legendItem.innerHTML = `
+                    <span class="color-box" style="background-color: ${color};"></span>
+                    ${pilot}
+                    ${convertDurationtoTime(lastPoint.flightTime)}
+                    ${lastPoint.altitude} m
+                    ${lastPoint.cumDist.toFixed(2)} km
+                    ${lastPoint.avgSpeed.toFixed(1)} km/h
+                    ${new Date(lastPoint.dateTime).toLocaleString()}
+                `;
+                legend.appendChild(legendItem);
             });
-            console.log("finished drawing points")
-            
+            console.log("Finished drawing points")
+
             // Only fit bounds if there are points
             if (allLatLngs.length > 0) {
+                legend.style.display = "flex";
                 map.fitBounds(allLatLngs);
             }
         }
 
         // Initial data from Go server
-        var initialData = JSON.parse(`{{ .PilotData }}`);
+        var initialData = JSON.parse(`{{ . }}`);
+        console.log("Init data: ", initialData);
         updateMapData(initialData);
-
-        // Handle updates from htmx
-        document.body.addEventListener('htmx:afterSwap', (e) => {
-            if (e.detail.target.id === "map-wrap" ) {
-                console.log("New data: " + newData);
-                const newData = JSON.parse(e.detail.xhr.responseText);
-                updateMapData(newData);
-            }
-        });
-
-        // Set the hx-get URL with the selected value on load
-        //document.addEventListener("DOMContentLoaded", function() {
-        //    const selectElement = document.getElementById("date-select");
-        //    const selectedDate = selectElement.value;
-
-        //    // Update hx-get URL to include the selected date as a query parameter
-        //    selectElement.setAttribute("hx-get", `/dates?date=${encodeURIComponent(selectedDate)}`);
-        //    console.log("Calling")
-        //    
-        //    // Trigger the initial load request with the updated hx-get URL
-        //    htmx.trigger(selectElement, "load");
-        //});
 
         // Make map responsive to window resizing
         window.addEventListener('resize', () => map.invalidateSize());
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.magic('tellHTMXOptionChanged', (el) => {
+                // This is needed for cross-browser compatability for when a <select> changes
+                return (event) => {
+                    function renderXPathSelector(value) {
+                    return `.//option[contains(., '${value}')]`
+                    }
+
+                    function getChosenOption(value) {
+                    return document.evaluate(renderXPathSelector(value), el).iterateNext()
+                    }
+
+                    const selectedOption = el.querySelector(`[value="${el.value}"]`) ||
+                    getChosenOption(event.target.value)
+                    htmx.trigger(selectedOption, 'click')
+
+                    targetDescription = htmx.closest(selectedOption, '[hx-target]').attributes['hx-target'].value
+                    if (targetDescription === 'this') {
+                    target = htmx.closest(selectedOption, '[hx-target]')
+                    }
+                    else if (targetDescription.startsWith('closest')) {
+                    selector = targetDescription.split(' ')[1]
+                    target = htmx.closest(selector)
+                    }
+                    else {
+                    target = htmx.find(targetDescription)
+                    }
+
+                    htmx.ajax('GET', selectedOption.attributes['hx-get'].value, target)
+                }
+            })
+
+        })
     </script>
 </body>
 </html>
