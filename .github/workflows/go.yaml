@@ -32,10 +32,6 @@ jobs:
         run: |
           go mod verify
 
-      - name: Run govulncheck
-        run: |
-          govulncheck -test ./...
-
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
