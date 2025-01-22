@@ -99,7 +99,7 @@ func (h *Handler) getTracksOfDay(ctx context.Context, date string) (string, erro
 	// Convert the JSON data back to a string
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("marshalling tracks: %w", err)
 	}
 
 	return string(jsonData), nil

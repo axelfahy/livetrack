@@ -16,6 +16,9 @@ linters-settings:
       - "w http.ResponseWriter"
       - "r *http.Request"
       - "wg *sync.WaitGroup"
+    ignore-names:
+      - id
+      - i # Iterator
   tagalign:
     sort: false
 
@@ -44,4 +47,3 @@ linters:
     - noctx
     - nosprintfhostport
     - testpackage
-
