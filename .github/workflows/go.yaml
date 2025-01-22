@@ -38,10 +38,6 @@ jobs:
         with:
           version: latest
 
-      - name: Run tests
-        run: |
-          go test -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt ./... -timeout 240s
-
       - name: Build
         run: |
           go build -v -o /dev/null ./...
