@@ -51,18 +51,18 @@ RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
               -X github.com/prometheus/common/version.BuildDate=${BUILD_DATE}" \
     ./cmd/web
 
-FROM --platform=$BUILDPLATFORM alpine:3.20 AS api
+FROM --platform=$BUILDPLATFORM alpine:3.21 AS api
 COPY --from=builder /src/livetrack-api /livetrack-api
 CMD ["/livetrack-api"]
 
-FROM --platform=$BUILDPLATFORM alpine:3.20 AS bot
+FROM --platform=$BUILDPLATFORM alpine:3.21 AS bot
 COPY --from=builder /src/livetrack-bot /livetrack-bot
 CMD ["/livetrack-bot"]
 
-FROM --platform=$BUILDPLATFORM alpine:3.20 AS fetcher
+FROM --platform=$BUILDPLATFORM alpine:3.21 AS fetcher
 COPY --from=builder /src/livetrack-fetcher /livetrack-fetcher
 CMD ["/livetrack-fetcher"]
 
-FROM --platform=$BUILDPLATFORM alpine:3.20 AS web
+FROM --platform=$BUILDPLATFORM alpine:3.21 AS web
 COPY --from=builder /src/livetrack-web /livetrack-web
 CMD ["/livetrack-web"]

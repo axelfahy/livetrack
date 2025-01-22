@@ -7,8 +7,6 @@ GOFUMPT=gofumpt
 WSL=wsl
 GOLINT=golangci-lint run
 BUILDPLATFORM=linux/arm64
-VERSION_MAJOR=$(shell echo $(VERSION) | cut -f1 -d.)
-VERSION_MINOR=$(shell echo $(VERSION) | cut -f2 -d.)
 GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 BUILD_DATE=$(shell date '+%Y-%m-%d-%H:%M:%S')
@@ -16,7 +14,7 @@ BUILD_DATE=$(shell date '+%Y-%m-%d-%H:%M:%S')
 GO_PACKAGE=fahy.xyz/livetrack
 GO_REGISTRY := $(if ${REGISTRY},$(patsubst %/,%,${REGISTRY})/)
 
-all: ensure package
+all: ensure push-api push-bot push-fetcher push-web
 
 ensure:
 	env GOOS=linux $(GOCMD) mod download
@@ -42,11 +40,12 @@ package-api:
 		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
 		--build-arg GIT_DIRTY=$(GIT_DIRTY) \
 		-t $(GO_REGISTRY)$(GO_PACKAGE)-api:$(VERSION) \
-		-t $(GO_REGISTRY)$(GO_PACKAGE)-api:$(VERSION_MAJOR).$(VERSION_MINOR) \
-		-t $(GO_REGISTRY)$(GO_PACKAGE)-api:$(VERSION_MAJOR) \
 		--load \
 		--target api \
 		.
+
+push-api: package-api
+	docker push $(GO_REGISTRY)$(GO_PACKAGE)-api:$(VERSION)
 
 package-bot:
 	docker buildx build -f ./Dockerfile \
@@ -56,11 +55,12 @@ package-bot:
 		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
 		--build-arg GIT_DIRTY=$(GIT_DIRTY) \
 		-t $(GO_REGISTRY)$(GO_PACKAGE)-bot:$(VERSION) \
-		-t $(GO_REGISTRY)$(GO_PACKAGE)-bot:$(VERSION_MAJOR).$(VERSION_MINOR) \
-		-t $(GO_REGISTRY)$(GO_PACKAGE)-bot:$(VERSION_MAJOR) \
 		--load \
 		--target bot \
 		.
+
+push-bot: package-bot
+	docker push $(GO_REGISTRY)$(GO_PACKAGE)-bot:$(VERSION)
 
 package-fetcher:
 	docker buildx build -f ./Dockerfile \
@@ -70,11 +70,12 @@ package-fetcher:
 		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
 		--build-arg GIT_DIRTY=$(GIT_DIRTY) \
 		-t $(GO_REGISTRY)$(GO_PACKAGE)-fetcher:$(VERSION) \
-		-t $(GO_REGISTRY)$(GO_PACKAGE)-fetcher:$(VERSION_MAJOR).$(VERSION_MINOR) \
-		-t $(GO_REGISTRY)$(GO_PACKAGE)-fetcher:$(VERSION_MAJOR) \
 		--load \
 		--target fetcher \
 		.
+
+push-fetcher: package-fetcher
+	docker push $(GO_REGISTRY)$(GO_PACKAGE)-fetcher:$(VERSION)
 
 package-web:
 	docker buildx build -f ./Dockerfile \
@@ -86,8 +87,9 @@ package-web:
 		--build-arg GIT_BRANCH=${GIT_BRANCH} \
 		--build-arg GIT_USER=${GIT_USER} \
 		-t $(GO_REGISTRY)$(GO_PACKAGE)-web:$(VERSION) \
-		-t $(GO_REGISTRY)$(GO_PACKAGE)-web:$(VERSION_MAJOR).$(VERSION_MINOR) \
-		-t $(GO_REGISTRY)$(GO_PACKAGE)-web:$(VERSION_MAJOR) \
 		--load \
 		--target web \
 		.
+
+push-web: package-web
+	docker push $(GO_REGISTRY)$(GO_PACKAGE)-web:$(VERSION)
