@@ -67,7 +67,7 @@ func NewPrometheusMetrics(subsys string) (*Prometheus, *prometheus.Registry, err
 	}, []string{"source"})
 
 	prom.pilotsRetrievedTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name:      "pilots_retrieved_Total",
+		Name:      "pilots_retrieved_total",
 		Help:      "Number of calls to retrieve pilots from the database",
 		Namespace: Namespace,
 		Subsystem: subsys,

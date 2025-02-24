@@ -280,11 +280,11 @@
                 // This is needed for cross-browser compatability for when a <select> changes
                 return (event) => {
                     function renderXPathSelector(value) {
-                    return `.//option[contains(., '${value}')]`
+                        return `.//option[contains(., '${value}')]`
                     }
 
                     function getChosenOption(value) {
-                    return document.evaluate(renderXPathSelector(value), el).iterateNext()
+                        return document.evaluate(renderXPathSelector(value), el).iterateNext()
                     }
 
                     const selectedOption = el.querySelector(`[value="${el.value}"]`) ||
@@ -293,14 +293,14 @@
 
                     targetDescription = htmx.closest(selectedOption, '[hx-target]').attributes['hx-target'].value
                     if (targetDescription === 'this') {
-                    target = htmx.closest(selectedOption, '[hx-target]')
+                        target = htmx.closest(selectedOption, '[hx-target]')
                     }
                     else if (targetDescription.startsWith('closest')) {
-                    selector = targetDescription.split(' ')[1]
-                    target = htmx.closest(selector)
+                        selector = targetDescription.split(' ')[1]
+                        target = htmx.closest(selector)
                     }
                     else {
-                    target = htmx.find(targetDescription)
+                        target = htmx.find(targetDescription)
                     }
 
                     htmx.ajax('GET', selectedOption.attributes['hx-get'].value, target)

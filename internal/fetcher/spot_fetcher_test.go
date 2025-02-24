@@ -1,7 +1,6 @@
 package fetcher
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -43,7 +42,7 @@ func TestSpotFetcher_Fetch(t *testing.T) {
 	}))
 	defer server.Close()
 	fetcher := NewSpotFetcher(server.URL, slog.Default().With("component", "spot-fetcher"), &emptyMetrics{})
-	res, err := fetcher.Fetch(context.Background(), "0smxuLcDXXlQkR6Uzu2HcDvp7MmW7TCLc")
+	res, err := fetcher.Fetch(t.Context(), "0smxuLcDXXlQkR6Uzu2HcDvp7MmW7TCLc")
 	require.NoError(t, err)
 
 	assert.Equal(t, "OK", res[0].MsgType)

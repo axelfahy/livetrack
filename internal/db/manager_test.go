@@ -109,7 +109,7 @@ func TestMain(m *testing.M) {
 func TestManager_GetAllPilots(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	pilots, err := manager.GetAllPilots(ctx)
 	require.NoError(t, err)
 	assert.Len(t, pilots, 23)
@@ -120,7 +120,7 @@ func TestManager_GetAllPilots(t *testing.T) {
 func TestManager_GetPilotsFromOrg(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	pilots, err := manager.GetPilotsFromOrg(ctx, "axlair")
 	require.NoError(t, err)
 	assert.Len(t, pilots, 1)
@@ -130,7 +130,7 @@ func TestManager_GetPilotsFromOrg(t *testing.T) {
 func TestManager_WriteTrack(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	points := []model.Point{
 		{
 			DateTime:   time.Date(2023, time.Month(8), 22, 8, 0, 0, 0, time.UTC),

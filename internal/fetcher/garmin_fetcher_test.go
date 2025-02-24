@@ -1,7 +1,6 @@
 package fetcher
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -46,7 +45,7 @@ func TestGarminFetcher_Fetch(t *testing.T) {
 	}))
 	defer server.Close()
 	fetcher := NewGarminFetcher(server.URL, slog.Default().With("component", "garmin-fetcher"), &emptyMetrics{})
-	res, err := fetcher.Fetch(context.Background(), "garminId")
+	res, err := fetcher.Fetch(t.Context(), "garminId")
 	require.NoError(t, err)
 
 	assert.Equal(t, "Tracking turned on from device.", res[0].MsgType)

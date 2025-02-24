@@ -39,11 +39,11 @@ linters:
     - dupl
     - errorlint
     - exhaustruct
-    - exportloopref # Deprecated
     - funlen
     - gocognit
     - godox
     - mnd
     - noctx
     - nosprintfhostport
+    - tenv # Deprecated
     - testpackage
