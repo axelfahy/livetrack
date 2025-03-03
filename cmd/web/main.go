@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -91,7 +92,9 @@ func run(env envConfig, logger *slog.Logger) error {
 
 	logger.Debug("HTTP server initialized")
 
-	ctxPool.Go(func(_ context.Context) error {
+	ctxPool.Go(func(ctx context.Context) error {
+		httpServer.BaseContext = func(_ net.Listener) context.Context { return ctx }
+
 		if err := httpServer.ListenAndServe(); err != nil {
 			return fmt.Errorf("HTTP server crashed: %w", err)
 		}

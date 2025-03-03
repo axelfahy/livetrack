@@ -129,6 +129,18 @@
     </select>
 
     <script>
+        // convertDurationToTime converts nanoseconds duration to a string format hh:mm:ss.
+        function convertDurationtoTime(duration) {
+            dateObj = new Date(duration / 1000000);
+            hours = dateObj.getUTCHours();
+            minutes = dateObj.getUTCMinutes();
+            seconds = dateObj.getSeconds();
+
+            return hours.toString().padStart(2, '0')
+                + ':' + minutes.toString().padStart(2, '0')
+                + ':' + seconds.toString().padStart(2, '0');
+        }
+
         function getDate() {
             const selectElement = document.getElementById("date-select");
             if (selectElement && selectElement.options.length > 0) {
@@ -136,6 +148,21 @@
             }
             return "";
         }
+
+        var eventSource = new EventSource("https://livetrack.fahy.xyz/events");
+
+        eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log("New track point received: ", data);
+
+            const selectedDate = document.querySelector("select").value; // Get selected date
+            console.log("Selected date: ", selectedDate);
+            htmx.ajax("GET", `/tracks/${selectedDate}`, "#map-wrap");
+        };
+
+        eventSource.onerror = function() {
+            console.log("SSE connection lost, attempting to reconnect...");
+        };
 
 
         var START_COLOR = '#5f65d3'
@@ -157,18 +184,6 @@
         var colors = [
             '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000'
         ];
-
-        // convertDurationToTime converts nanoseconds duration to a string format hh:mm:ss.
-        function convertDurationtoTime(duration) {
-            dateObj = new Date(duration / 1000000);
-            hours = dateObj.getUTCHours();
-            minutes = dateObj.getUTCMinutes();
-            seconds = dateObj.getSeconds();
-
-            return hours.toString().padStart(2, '0')
-                + ':' + minutes.toString().padStart(2, '0')
-                + ':' + seconds.toString().padStart(2, '0');
-        }
 
         function updateMapData(pilotData) {
             // Clear existing layers
