@@ -155,9 +155,15 @@
             const data = JSON.parse(event.data);
             console.log("New track point received: ", data);
 
-            const selectedDate = document.querySelector("select").value; // Get selected date
+            const selectedDate = getDate(); // Get selected date
             console.log("Selected date: ", selectedDate);
-            htmx.ajax("GET", `/tracks/${selectedDate}`, "#map-wrap");
+            const today = new Date();
+            const formattedDateToday = today.toISOString().split('T')[0];
+            console.log("Today: ", formattedDateToday);
+
+            if (selectedDate == formattedDateToday) {
+                htmx.ajax("GET", `/tracks/${selectedDate}`, "#map-wrap");
+            }
         };
 
         eventSource.onerror = function() {

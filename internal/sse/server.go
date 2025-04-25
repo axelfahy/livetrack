@@ -138,6 +138,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ListenForNotifications listens to postgresql notifications.
+//
+// New points are broadcasted to clients.
 func (s *Server) ListenForNotifications(ctx context.Context) error {
 	if err := s.listener.Listen("new_track_data"); err != nil {
 		return fmt.Errorf("listening to new data: %w", err)
@@ -164,7 +167,7 @@ func (s *Server) ListenForNotifications(ctx context.Context) error {
 	}
 }
 
-// broadcast sends the new point to all connected SSE clients.
+// Broadcast sends the new point to all connected SSE clients.
 func (s *Server) Broadcast(message string) {
 	s.logger.Info("Broadcasting", "message", message)
 	s.msgChan <- message
