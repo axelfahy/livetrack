@@ -31,6 +31,10 @@ type Prometheus struct {
 	// Web
 	requests *prometheus.SummaryVec
 	errors   *prometheus.CounterVec
+	// SSE
+	clientsCount                       prometheus.Gauge
+	msgsSSESentTotal                   prometheus.Counter
+	databaseNotificationsReceivedTotal prometheus.Counter
 }
 
 func NewPrometheusMetrics(subsys string) (*Prometheus, *prometheus.Registry, error) {
@@ -113,6 +117,27 @@ func NewPrometheusMetrics(subsys string) (*Prometheus, *prometheus.Registry, err
 		Namespace: "http",
 	}, []string{"code", "path"})
 
+	prom.clientsCount = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name:      "clients_count",
+		Help:      "Number of clients connected to SSE.",
+		Namespace: Namespace,
+		Subsystem: subsys,
+	})
+
+	prom.msgsSSESentTotal = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:      "msgs_sse_sent_total",
+		Help:      "Number of messages sent by Server Side Events.",
+		Namespace: Namespace,
+		Subsystem: subsys,
+	})
+
+	prom.databaseNotificationsReceivedTotal = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:      "database_notifications_received_total",
+		Help:      "Number of notifications from the database received.",
+		Namespace: Namespace,
+		Subsystem: subsys,
+	})
+
 	errs = append(errs,
 		promReg.Register(collectors.NewBuildInfoCollector()),
 		promReg.Register(collectors.NewGoCollector()),
@@ -126,6 +151,9 @@ func NewPrometheusMetrics(subsys string) (*Prometheus, *prometheus.Registry, err
 		promReg.Register(prom.msgsBotRemovedTotal),
 		promReg.Register(prom.requests),
 		promReg.Register(prom.errors),
+		promReg.Register(prom.clientsCount),
+		promReg.Register(prom.msgsSSESentTotal),
+		promReg.Register(prom.databaseNotificationsReceivedTotal),
 	)
 
 	if err := errors.Join(errs...); err != nil {
@@ -157,3 +185,9 @@ func (p *Prometheus) Request(method, endpoint string, duration time.Duration) {
 func (p *Prometheus) Error(code int, endpoint string) {
 	p.errors.WithLabelValues(strconv.Itoa(code), endpoint).Inc()
 }
+
+// SSE metrics.
+func (p *Prometheus) AddClient()            { p.clientsCount.Inc() }
+func (p *Prometheus) DelClient()            { p.clientsCount.Sub(1.0) }
+func (p *Prometheus) MsgsSent()             { p.msgsSSESentTotal.Inc() }
+func (p *Prometheus) NotificationReceived() { p.databaseNotificationsReceivedTotal.Inc() }

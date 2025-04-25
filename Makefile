@@ -1,4 +1,4 @@
-VERSION=v2.1.0
+VERSION=v2.2.0
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
@@ -76,6 +76,21 @@ package-fetcher:
 
 push-fetcher: package-fetcher
 	docker push $(GO_REGISTRY)$(GO_PACKAGE)-fetcher:$(VERSION)
+
+package-sse:
+	docker buildx build -f ./Dockerfile \
+		--platform $(BUILDPLATFORM) \
+		--build-arg VERSION=$(VERSION) \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
+		--build-arg GIT_DIRTY=$(GIT_DIRTY) \
+		-t $(GO_REGISTRY)$(GO_PACKAGE)-sse:$(VERSION) \
+		--load \
+		--target sse \
+		.
+
+push-sse: package-sse
+	docker push $(GO_REGISTRY)$(GO_PACKAGE)-sse:$(VERSION)
 
 package-web:
 	docker buildx build -f ./Dockerfile \

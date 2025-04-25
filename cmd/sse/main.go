@@ -11,9 +11,8 @@ import (
 	"syscall"
 	"time"
 
-	"fahy.xyz/livetrack/internal/db"
 	"fahy.xyz/livetrack/internal/metrics"
-	"github.com/gorilla/mux"
+	"fahy.xyz/livetrack/internal/sse"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/version"
@@ -31,14 +30,14 @@ type envConfig struct {
 	PostgresUser     string `envconfig:"POSTGRES_USER"     required:"true"     desc:"The postgres user"`
 	PostgresPassword string `envconfig:"POSTGRES_PASSWORD" required:"true"     desc:"The postgres password"`
 	// Metrics
-	MetricsSubsystem string `envconfig:"METRICS_SUBSYSTEM" default:"api" desc:"The Prometheus subsystem for the metrics"`
+	MetricsSubsystem string `envconfig:"METRICS_SUBSYSTEM" default:"sse" desc:"The Prometheus subsystem for the metrics"`
 }
 
 const (
 	defaultReadTimeout    = 5 * time.Second
-	defaultWriteTimeout   = 10 * time.Second
-	defaultIdleTimeout    = 30 * time.Second
-	serverShutdownTimeout = 10 * time.Second
+	defaultWriteTimeout   = 0 // No timeout for SSE
+	defaultIdleTimeout    = 0 // No timeout for SSE
+	serverShutdownTimeout = 100 * time.Second
 )
 
 func main() {
@@ -53,13 +52,13 @@ func main() {
 	logger := slog.New(handler)
 
 	if err := run(env, logger); err != nil {
-		logger.Error("running livetrack-api", "error", err)
+		logger.Error("running livetrack-sse", "error", err)
 		os.Exit(1)
 	}
 }
 
 func run(env envConfig, logger *slog.Logger) error {
-	logger.Info("Livetrack api is initializing...",
+	logger.Info("Livetrack SSE is initializing...",
 		"version", version.Version,
 		"revision", version.Revision,
 		"build_date", version.BuildDate,
@@ -68,7 +67,7 @@ func run(env envConfig, logger *slog.Logger) error {
 		"go_version", version.GoVersion,
 	)
 
-	logger = logger.With("component", "api")
+	logger = logger.With("component", "sse")
 	logger.Info("Configuration", "env", env)
 
 	promMetrics, promReg, err := metrics.NewPrometheusMetrics(env.MetricsSubsystem)
@@ -76,7 +75,7 @@ func run(env envConfig, logger *slog.Logger) error {
 		return fmt.Errorf("creating Prometheus metrics: %w", err)
 	}
 
-	mux := mux.NewRouter()
+	mux := http.NewServeMux()
 	mux.Handle(metrics.Path, promhttp.HandlerFor(promReg, promhttp.HandlerOpts{}))
 	logger.Debug("Metrics initialized")
 
@@ -129,23 +128,26 @@ func run(env envConfig, logger *slog.Logger) error {
 	)
 	logger.Info("Connecting to database", "URL", databaseURL)
 
-	manager, err := db.NewManager(ctx, databaseURL, logger.With("component", "manager"), promMetrics)
-	if err != nil {
-		return fmt.Errorf("starting DB manager: %w", err)
-	}
+	server := sse.NewServer(databaseURL, logger.With("component", "sse"), promMetrics)
+	defer server.Close()
 
-	logger.Debug("DB manager initialized")
+	ctxPool.Go(func(ctx context.Context) error {
+		if err := server.Run(ctx); err != nil {
+			return fmt.Errorf("running server side events: %w", err)
+		}
 
-	handler := NewHandler(manager, logger.With("component", "handler"), promMetrics)
-	apiRouter := mux.PathPrefix("/api").Subrouter()
+		return nil
+	})
 
-	apiRouter.HandleFunc("/ping", handler.Ping).Methods(http.MethodGet)
+	mux.HandleFunc("/events", server.ServeHTTP)
 
-	apiRouter.HandleFunc("/dates", handler.GetDatesWithCount).Methods(http.MethodGet)
-	apiRouter.HandleFunc("/pilots", handler.GetPilots).Methods(http.MethodGet)
-	apiRouter.HandleFunc("/tracks/{date}", handler.GetTracksOfDay).Methods(http.MethodGet)
+	ctxPool.Go(func(ctx context.Context) error {
+		if err := server.ListenForNotifications(ctx); err != nil {
+			return fmt.Errorf("listening to notifications: %w", err)
+		}
 
-	logger.Info("Livetrack api module initialized")
+		return nil
+	})
 
 	if err = ctxPool.Wait(); err != nil {
 		return fmt.Errorf("goroutine pool: %w", err)
