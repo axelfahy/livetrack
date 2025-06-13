@@ -1,39 +1,15 @@
+version: "2"
 run:
-  # Allowed values: readonly|vendor|mod
-  # By default, it isn't set.
   modules-download-mode: readonly
-
+  issues-exit-code: 1
 output:
   formats:
-    - format: colored-line-number
-  print-issued-lines: true
-  print-linter-name: true
-
-linters-settings:
-  varnamelen:
-    ignore-type-assert-ok: true
-    ignore-decls:
-      - "w http.ResponseWriter"
-      - "r *http.Request"
-      - "wg *sync.WaitGroup"
-    ignore-names:
-      - id
-      - i # Iterator
-  tagalign:
-    sort: false
-
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - lll
-        - gochecknoglobals
-    - source: "`.*`"
-      linters:
-      - lll # Because of the struct tags
-
+    text:
+      path: stdout
+      print-linter-name: true
+      print-issued-lines: true
 linters:
-  enable-all: true
+  default: all
   disable:
     - depguard
     - dupl
@@ -45,5 +21,47 @@ linters:
     - mnd
     - noctx
     - nosprintfhostport
-    - tenv # Deprecated
     - testpackage
+  settings:
+    tagalign:
+      sort: false
+    varnamelen:
+      ignore-names:
+        - id
+        - i
+      ignore-type-assert-ok: true
+      ignore-decls:
+        - w http.ResponseWriter
+        - r *http.Request
+        - wg *sync.WaitGroup
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - gochecknoglobals
+          - lll
+        path: _test\.go
+      - linters:
+          - lll
+        source: '`.*`'
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

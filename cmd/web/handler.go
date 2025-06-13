@@ -55,56 +55,6 @@ func NewHandler(endpoint string, logger *slog.Logger, metrics handlerMetrics) *H
 	}
 }
 
-// getTracksOfDay retrieves the tracks of the given day.
-//
-// Pilots without points are removed from the output.
-// It structure is Marshalled and return as a string.
-func (h *Handler) getTracksOfDay(ctx context.Context, date string) (string, error) {
-	url, err := url.JoinPath(h.endpoint, "/tracks/"+date)
-	if err != nil {
-		return "", fmt.Errorf("parsing URL: %w", err)
-	}
-
-	h.logger.Info("[GET]", "url", url)
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return "", fmt.Errorf("getting tracks: %w", err)
-	}
-
-	req.Header.Set("User-Agent", "Wget/1.13.4 (linux-gnu)")
-
-	resp, err := h.client.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("executing request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	h.logger.Info("body", "body", resp.Body)
-
-	data := make(map[string][]model.Point)
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return "", fmt.Errorf("parsing tracks: %w", err)
-	}
-
-	// Filter out empty tracks.
-	for pilot, points := range data {
-		if len(points) == 0 {
-			delete(data, pilot)
-		}
-	}
-
-	h.logger.DebugContext(ctx, "Tracks", "data", data)
-
-	// Convert the JSON data back to a string
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		return "", fmt.Errorf("marshalling tracks: %w", err)
-	}
-
-	return string(jsonData), nil
-}
-
 // Home retrieves the track of the current day.
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 	h.logger.InfoContext(r.Context(), "[/]")
@@ -208,4 +158,54 @@ func (h *Handler) GetTracks(w http.ResponseWriter, r *http.Request) {
 		h.logger.ErrorContext(r.Context(), "Executing template", "error", err)
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 	}
+}
+
+// getTracksOfDay retrieves the tracks of the given day.
+//
+// Pilots without points are removed from the output.
+// It structure is Marshalled and return as a string.
+func (h *Handler) getTracksOfDay(ctx context.Context, date string) (string, error) {
+	url, err := url.JoinPath(h.endpoint, "/tracks/"+date)
+	if err != nil {
+		return "", fmt.Errorf("parsing URL: %w", err)
+	}
+
+	h.logger.Info("[GET]", "url", url)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", fmt.Errorf("getting tracks: %w", err)
+	}
+
+	req.Header.Set("User-Agent", "Wget/1.13.4 (linux-gnu)")
+
+	resp, err := h.client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("executing request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	h.logger.Info("body", "body", resp.Body)
+
+	data := make(map[string][]model.Point)
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return "", fmt.Errorf("parsing tracks: %w", err)
+	}
+
+	// Filter out empty tracks.
+	for pilot, points := range data {
+		if len(points) == 0 {
+			delete(data, pilot)
+		}
+	}
+
+	h.logger.DebugContext(ctx, "Tracks", "data", data)
+
+	// Convert the JSON data back to a string
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return "", fmt.Errorf("marshalling tracks: %w", err)
+	}
+
+	return string(jsonData), nil
 }

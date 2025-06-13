@@ -1,11 +1,4 @@
 VERSION=v2.2.0
-GOCMD=go
-GOBUILD=$(GOCMD) build
-GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test
-GOFUMPT=gofumpt
-WSL=wsl
-GOLINT=golangci-lint run
 BUILDPLATFORM=linux/arm64
 GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
@@ -20,17 +13,18 @@ ensure:
 	env GOOS=linux $(GOCMD) mod download
 
 clean:
-	$(GOCLEAN)
+	go clean
+	go mod tidy
 
 fmt:
-	$(GOFUMPT) -l -w .
-	$(WSL) --fix ./...
+	gofumpt -l -w .
+	wsl --fix ./...
 
 lint:
-	$(GOLINT) ./...
+	golangci-lint run -c .golangci.yaml ./...
 
 test:
-	$(GOTEST) ./...
+	go test -race ./...
 
 package-api:
 	docker buildx build -f ./Dockerfile \

@@ -29,17 +29,6 @@ func NewSpotFetcher(url string, logger *slog.Logger, metrics metrics) *SpotFetch
 	}
 }
 
-func (f *SpotFetcher) createURL(id string) (string, error) {
-	s, err := url.JoinPath(f.url, id, "message.json")
-	if err != nil {
-		return "", fmt.Errorf("joining path: %w", err)
-	}
-
-	sWithDate := fmt.Sprintf("%s?startDate=%s", s, time.Now().Format("2006-01-02T00:00:00-0000"))
-
-	return sWithDate, nil
-}
-
 func (f *SpotFetcher) Fetch(ctx context.Context, id string) ([]model.Point, error) {
 	url, err := f.createURL(id)
 	if err != nil {
@@ -80,4 +69,15 @@ func (f *SpotFetcher) Fetch(ctx context.Context, id string) ([]model.Point, erro
 	f.metrics.MessageFetched("spot")
 
 	return points, nil
+}
+
+func (f *SpotFetcher) createURL(id string) (string, error) {
+	s, err := url.JoinPath(f.url, id, "message.json")
+	if err != nil {
+		return "", fmt.Errorf("joining path: %w", err)
+	}
+
+	sWithDate := fmt.Sprintf("%s?startDate=%s", s, time.Now().Format("2006-01-02T00:00:00-0000"))
+
+	return sWithDate, nil
 }

@@ -29,23 +29,6 @@ func NewGarminFetcher(url string, logger *slog.Logger, metrics metrics) *GarminF
 	}
 }
 
-func (f *GarminFetcher) createURL(id string) (string, error) {
-	urlWithID, err := url.JoinPath(f.url, id)
-	if err != nil {
-		return "", fmt.Errorf("joining path: %w", err)
-	}
-
-	year, month, day := time.Now().Date()
-	sWithDate := fmt.Sprintf(
-		"%s?d1=%s&d2=%s",
-		urlWithID,
-		time.Date(year, month, day, 0, 0, 0, 0, time.UTC).Format("2006-01-02T15:04"),
-		time.Date(year, month, day, 23, 59, 0, 0, time.UTC).Format("2006-01-02T15:04"),
-	)
-
-	return sWithDate, nil
-}
-
 func (f *GarminFetcher) Fetch(ctx context.Context, id string) ([]model.Point, error) {
 	url, err := f.createURL(id)
 	if err != nil {
@@ -86,4 +69,21 @@ func (f *GarminFetcher) Fetch(ctx context.Context, id string) ([]model.Point, er
 	f.metrics.MessageFetched("garmin")
 
 	return points, nil
+}
+
+func (f *GarminFetcher) createURL(id string) (string, error) {
+	urlWithID, err := url.JoinPath(f.url, id)
+	if err != nil {
+		return "", fmt.Errorf("joining path: %w", err)
+	}
+
+	year, month, day := time.Now().Date()
+	sWithDate := fmt.Sprintf(
+		"%s?d1=%s&d2=%s",
+		urlWithID,
+		time.Date(year, month, day, 0, 0, 0, 0, time.UTC).Format("2006-01-02T15:04"),
+		time.Date(year, month, day, 23, 59, 0, 0, time.UTC).Format("2006-01-02T15:04"),
+	)
+
+	return sWithDate, nil
 }
