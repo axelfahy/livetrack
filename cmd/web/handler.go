@@ -61,10 +61,26 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 
 	today := time.Now().Format("2006-01-02")
 
-	jsonData, err := h.getTracksOfDay(r.Context(), today)
-	if err != nil {
-		h.logger.ErrorContext(r.Context(), "Retrieving tracks", "date", today, "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	pilot := r.URL.Query().Get("pilot")
+	if pilot == "" {
+		h.logger.Debug("No pilot specified, showing all tracks.")
+	}
+
+	var jsonData string
+
+	var err error
+	if pilot != "" {
+		jsonData, err = h.getTrackOfDayForPilot(r.Context(), today, pilot)
+		if err != nil {
+			h.logger.ErrorContext(r.Context(), "Retrieving track", "date", today, "pilot", pilot, "error", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	} else {
+		jsonData, err = h.getTracksOfDay(r.Context(), today)
+		if err != nil {
+			h.logger.ErrorContext(r.Context(), "Retrieving tracks", "date", today, "error", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 
 	h.logger.DebugContext(r.Context(), "Tracks", "date", "today", "json", jsonData)
@@ -200,6 +216,49 @@ func (h *Handler) getTracksOfDay(ctx context.Context, date string) (string, erro
 	}
 
 	h.logger.DebugContext(ctx, "Tracks", "data", data)
+
+	// Convert the JSON data back to a string
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return "", fmt.Errorf("marshalling tracks: %w", err)
+	}
+
+	return string(jsonData), nil
+}
+
+// getTrackOfDayForPilot retrieves the pilot's track for the given day.
+func (h *Handler) getTrackOfDayForPilot(ctx context.Context, date, pilot string) (string, error) {
+	url, err := url.JoinPath(h.endpoint, "/track/"+date+"/"+pilot)
+	if err != nil {
+		return "", fmt.Errorf("parsing URL: %w", err)
+	}
+
+	h.logger.Info("[GET]", "url", url)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", fmt.Errorf("getting tracks: %w", err)
+	}
+
+	req.Header.Set("User-Agent", "Wget/1.13.4 (linux-gnu)")
+
+	resp, err := h.client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("executing request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	h.logger.Info("body", "body", resp.Body)
+
+	points := []model.Point{}
+	if err := json.NewDecoder(resp.Body).Decode(&points); err != nil {
+		return "", fmt.Errorf("parsing tracks: %w", err)
+	}
+
+	data := make(map[string][]model.Point)
+	data[pilot] = points
+
+	h.logger.DebugContext(ctx, "Tracks", "data", data, "pilot", pilot)
 
 	// Convert the JSON data back to a string
 	jsonData, err := json.Marshal(data)

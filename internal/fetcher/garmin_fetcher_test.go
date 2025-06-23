@@ -44,6 +44,7 @@ func TestGarminFetcher_Fetch(t *testing.T) {
 		_, _ = w.Write(data)
 	}))
 	defer server.Close()
+
 	fetcher := NewGarminFetcher(server.URL, slog.Default().With("component", "garmin-fetcher"), &emptyMetrics{})
 	res, err := fetcher.Fetch(t.Context(), "garminId")
 	require.NoError(t, err)

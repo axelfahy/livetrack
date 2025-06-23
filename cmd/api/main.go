@@ -144,6 +144,7 @@ func run(env envConfig, logger *slog.Logger) error {
 	apiRouter.HandleFunc("/dates", handler.GetDatesWithCount).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/pilots", handler.GetPilots).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/tracks/{date}", handler.GetTracksOfDay).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/track/{date}/{pilot}", handler.GetTrackOfDayForPilot).Methods(http.MethodGet)
 
 	logger.Info("Livetrack api module initialized")
 

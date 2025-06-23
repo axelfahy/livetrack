@@ -170,5 +170,6 @@ func (s *Server) ListenForNotifications(ctx context.Context) error {
 // Broadcast sends the new point to all connected SSE clients.
 func (s *Server) Broadcast(message string) {
 	s.logger.Info("Broadcasting", "message", message)
+
 	s.msgChan <- message
 }
