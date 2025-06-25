@@ -65,6 +65,13 @@ func TestPilot_GetFlightTime(t *testing.T) {
 	assert.Equal(t, "4h12m11s", fmt.Sprint(flightTime))
 }
 
+func TestPilot_GetLivetrackURL(t *testing.T) {
+	t.Parallel()
+
+	url := pilot.GetLivetrackURL("https://test.xyz/")
+	assert.Equal(t, "[Livetrack](https://test.xyz/?pilot=test)", url)
+}
+
 func TestPilot_GetTakeOffDistance(t *testing.T) {
 	t.Parallel()
 

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -13,6 +14,11 @@ import (
 )
 
 const errDuplicateKey = "23505"
+
+var (
+	ErrPilotNameNotUnique = errors.New("multiple pilots with the same name")
+	ErrPilotNotFound      = errors.New("no pilot with this name")
+)
 
 type Manager struct {
 	client  *pgxpool.Pool
@@ -32,7 +38,14 @@ func NewManager(
 	logger *slog.Logger,
 	metrics managerMetrics,
 ) (*Manager, error) {
-	conn, err := pgxpool.New(ctx, databaseURL)
+	logger.DebugContext(ctx, "Creating manager", "url", databaseURL)
+
+	dbConfig, err := pgxpool.ParseConfig(databaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("creating the database configuration: %w", err)
+	}
+
+	conn, err := pgxpool.NewWithConfig(ctx, dbConfig)
 	if err != nil {
 		return nil, fmt.Errorf("creating pgxpool: %w", err)
 	}
@@ -46,7 +59,7 @@ func NewManager(
 		logger:  logger,
 		metrics: metrics,
 	}
-	manager.logger.Info("Connected to database", "manager", manager)
+	manager.logger.InfoContext(ctx, "Connected to database", "manager", manager)
 
 	return manager, nil
 }
@@ -116,6 +129,35 @@ func (m *Manager) GetDatesWithCount(ctx context.Context, limit int) ([]time.Time
 	m.logger.Debug("Dates retrieved", "dates", dates, "counts", counts)
 
 	return dates, counts, nil
+}
+
+func (m *Manager) GetPilotID(ctx context.Context, name string) (string, error) {
+	rows, err := m.client.Query(ctx, "SELECT id FROM pilot WHERE name = $1", name)
+	if err != nil {
+		return "", fmt.Errorf("querying pilots: %w", err)
+	}
+
+	defer rows.Close()
+
+	pilots, err := pgx.CollectRows(rows, pgx.RowTo[string])
+	if err != nil {
+		return "", fmt.Errorf("collecting rows: %w", err)
+	}
+
+	if len(pilots) > 1 {
+		return "", ErrPilotNameNotUnique
+	}
+
+	if len(pilots) == 0 {
+		return "", ErrPilotNotFound
+	}
+
+	pilotID := pilots[0]
+
+	m.logger.Debug("Pilot ID retrieved", "name", name, "ID", pilotID)
+	m.metrics.PilotRetrieved()
+
+	return pilotID, nil
 }
 
 func (m *Manager) GetPilotsFromOrg(ctx context.Context, org string) ([]model.Pilot, error) {
@@ -221,7 +263,7 @@ func (m *Manager) GetTrackOfDay(ctx context.Context, pilotID string, date time.T
 
 	m.logger.Debug("Track retrieved", "pilot", pilotID, "points", points)
 	m.metrics.TrackRetrieved()
-	// TODO: computed stats (flight time, takeoffdist, cumdist, avgspeed, legspeed, legdist
+
 	return points, nil
 }
 

@@ -41,6 +41,7 @@ func TestSpotFetcher_Fetch(t *testing.T) {
 		_, _ = w.Write(data)
 	}))
 	defer server.Close()
+
 	fetcher := NewSpotFetcher(server.URL, slog.Default().With("component", "spot-fetcher"), &emptyMetrics{})
 	res, err := fetcher.Fetch(t.Context(), "0smxuLcDXXlQkR6Uzu2HcDvp7MmW7TCLc")
 	require.NoError(t, err)

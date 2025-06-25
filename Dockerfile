@@ -13,7 +13,7 @@ WORKDIR /src
 
 FROM builder AS builder-api
 RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
-    go build -o livetrack-api \
+    go build -trimpath -o livetrack-api \
     -ldflags "-w -s \
               -X github.com/prometheus/common/version.Version=${VERSION} \
               -X github.com/prometheus/common/version.Revision=${GIT_COMMIT}${GIT_DIRTY} \
@@ -24,7 +24,7 @@ RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
 
 FROM builder AS builder-bot
 RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
-    go build -o livetrack-bot \
+    go build -trimpath -o livetrack-bot \
     -ldflags "-w -s \
               -X github.com/prometheus/common/version.Version=${VERSION} \
               -X github.com/prometheus/common/version.Revision=${GIT_COMMIT}${GIT_DIRTY} \
@@ -35,7 +35,7 @@ RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
 
 FROM builder AS builder-fetcher
 RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
-    go build -o livetrack-fetcher \
+    go build -trimpath -o livetrack-fetcher \
     -ldflags "-w -s \
               -X github.com/prometheus/common/version.Version=${VERSION} \
               -X github.com/prometheus/common/version.Revision=${GIT_COMMIT}${GIT_DIRTY} \
@@ -46,7 +46,7 @@ RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
 
 FROM builder AS builder-sse
 RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
-    go build -o livetrack-sse \
+    go build -trimpath -o livetrack-sse \
     -ldflags "-w -s \
               -X github.com/prometheus/common/version.Version=${VERSION} \
               -X github.com/prometheus/common/version.Revision=${GIT_COMMIT}${GIT_DIRTY} \
@@ -57,7 +57,7 @@ RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
 
 FROM builder AS builder-web
 RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
-    go build -o livetrack-web \
+    go build -trimpath -o livetrack-web \
     -ldflags "-w -s \
               -X github.com/prometheus/common/version.Version=${VERSION} \
               -X github.com/prometheus/common/version.Revision=${GIT_COMMIT}${GIT_DIRTY} \

@@ -1,4 +1,4 @@
-VERSION=v2.2.0
+VERSION=v2.3.0
 BUILDPLATFORM=linux/arm64
 GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
@@ -10,7 +10,7 @@ GO_REGISTRY := $(if ${REGISTRY},$(patsubst %/,%,${REGISTRY})/)
 all: ensure push-api push-bot push-fetcher push-web
 
 ensure:
-	env GOOS=linux $(GOCMD) mod download
+	env GOOS=linux go mod download
 
 clean:
 	go clean
@@ -102,3 +102,4 @@ package-web:
 
 push-web: package-web
 	docker push $(GO_REGISTRY)$(GO_PACKAGE)-web:$(VERSION)
+

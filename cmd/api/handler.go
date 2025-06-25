@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"time"
@@ -32,7 +33,13 @@ func NewHandler(manager *db.Manager, logger *slog.Logger, metrics handlerMetrics
 func (h *Handler) Ping(w http.ResponseWriter, _ *http.Request) {
 	h.logger.Info("Route triggered", "method", "GET", "route", "[/ping]")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte("{\"status\": \"pong\"}"))
+
+	if _, err := w.Write([]byte("{\"status\": \"pong\"}")); err != nil {
+		h.logger.Error("Error pinging", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
 }
 
 func (h *Handler) GetDatesWithCount(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +49,8 @@ func (h *Handler) GetDatesWithCount(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("Error retrieving dates", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 
 	w.Header().Set("Content-type", "application/json")
@@ -55,6 +64,8 @@ func (h *Handler) GetDatesWithCount(w http.ResponseWriter, r *http.Request) {
 			Counts: counts,
 		}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 }
 
@@ -65,12 +76,16 @@ func (h *Handler) GetPilots(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("Error retrieving pilots", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 
 	w.Header().Set("Content-type", "application/json")
 
 	if err := json.NewEncoder(w).Encode(pilots); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 }
 
@@ -81,17 +96,67 @@ func (h *Handler) GetTracksOfDay(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("Error retrieving parameter", "parameter", "date")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 
 	tracks, err := h.manager.GetAllTracksOfDay(r.Context(), date)
 	if err != nil {
 		h.logger.Error("Error retrieving pilots", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 
 	w.Header().Set("Content-type", "application/json")
 
 	if err := json.NewEncoder(w).Encode(tracks); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+}
+
+func (h *Handler) GetTrackOfDayForPilot(w http.ResponseWriter, r *http.Request) {
+	h.logger.Info("Route triggered", "method", "GET", "route", "[/track/{date}/{pilot}]")
+
+	date, err := time.Parse("2006-01-02", mux.Vars(r)["date"])
+	if err != nil {
+		h.logger.Error("Error retrieving parameter", "parameter", "date")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+
+	pilot := mux.Vars(r)["pilot"]
+
+	pilotID, err := h.manager.GetPilotID(r.Context(), pilot)
+	if err != nil {
+		h.logger.Error("Error retrieving pilot ID", "pilot", pilot)
+
+		code := http.StatusInternalServerError
+		if errors.Is(err, db.ErrPilotNotFound) {
+			code = http.StatusNotFound
+		}
+
+		http.Error(w, err.Error(), code)
+
+		return
+	}
+
+	tracks, err := h.manager.GetTrackOfDay(r.Context(), pilotID, date)
+	if err != nil {
+		h.logger.Error("Error retrieving pilot's track", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+
+	w.Header().Set("Content-type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(tracks); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 }

@@ -39,6 +39,13 @@ func (p *Pilot) GetFlightTime() time.Duration {
 	return p.Points[len(p.Points)-1].DateTime.Sub(p.Points[0].DateTime)
 }
 
+// GetLivetrackURL returns the pilot's link for the livetrack of the day.
+func (p *Pilot) GetLivetrackURL(endpoint string) string {
+	linkName := "[Livetrack]"
+
+	return fmt.Sprintf("%s(%s?pilot=%s)", linkName, endpoint, p.Name)
+}
+
 // GetSbbItinerary retrieves the SBB itinerary of the pilot to go home.
 func (p *Pilot) GetSbbItinerary(latitude, longitude float64) (string, error) {
 	params := url.Values{}

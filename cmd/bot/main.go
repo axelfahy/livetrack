@@ -32,8 +32,9 @@ type envConfig struct {
 	PostgresUser     string `envconfig:"POSTGRES_USER"     required:"true"     desc:"The postgres user"`
 	PostgresPassword string `envconfig:"POSTGRES_PASSWORD" required:"true"     desc:"The postgres password"`
 	// Behaviour settings
-	FetchInterval time.Duration `envconfig:"FETCH_INTERVAL" default:"4m"    desc:"The interval between two fetches"`
-	Organization  string        `envconfig:"ORGANIZATION"   required:"true" desc:"The organization of the pilots to retrieve"`
+	FetchInterval     time.Duration `envconfig:"FETCH_INTERVAL"     default:"4m"                          desc:"The interval between two fetches"`
+	Organization      string        `envconfig:"ORGANIZATION"       required:"true"                       desc:"The organization of the pilots to retrieve"`
+	LivetrackEndpoint string        `envconfig:"LIVETRACK_ENDPOINT" default:"https://livetrack.fahy.xyz/" desc:"The livetrack endpoint for the messages"`
 	// Telegram config
 	TelegramChannel string `envconfig:"TELEGRAM_CHANNEL" required:"true" desc:"The telegram channel to use"`
 	TelegramToken   string `envconfig:"TELEGRAM_TOKEN"   required:"true" desc:"The telegram token to use"`
@@ -193,9 +194,10 @@ func run(env envConfig, logger *slog.Logger) error {
 			// If no point registered, send the start message.
 			if len(points) > 0 && len(pilots[i].Points) == 0 {
 				err = bot.SendMessage(fmt.Sprintf(
-					"*%s* started tracking at %s",
+					"*%s* started tracking at %s\n%s",
 					pilots[i].Name,
 					points[0].DateTime.Format(time.RFC822),
+					pilots[i].GetLivetrackURL(env.LivetrackEndpoint),
 				))
 				if err != nil {
 					logger.Error("Sending message", "pilot", pilots[i], "error", err)
@@ -224,12 +226,13 @@ func run(env envConfig, logger *slog.Logger) error {
 					}
 
 					msg = fmt.Sprintf(
-						"*%s* sent OK at %s\nFlight time: %s\nDistance ALL/TO: %.2f/%.2f km\n%s\n%s",
+						"*%s* sent OK at %s\nFlight time: %s\nDistance ALL/TO: %.2f/%.2f km\n%s\n%s\n%s",
 						pilots[i].Name,
 						point.DateTime.Format(time.RFC822),
 						pilots[i].GetFlightTime(),
 						pilots[i].GetCumulativeDistance(),
 						pilots[i].GetTakeOffDistance(),
+						pilots[i].GetLivetrackURL(env.LivetrackEndpoint),
 						point.GetItineraryURL(),
 						sbbItinerary,
 					)
