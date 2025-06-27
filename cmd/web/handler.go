@@ -132,6 +132,7 @@ func (h *Handler) GetDates(w http.ResponseWriter, r *http.Request) {
 
 	today := time.Now().Format("2006-01-02")
 
+	h.logger.Info(r.URL.RawQuery)
 	selectedDate := r.URL.Query().Get("date")
 	h.logger.InfoContext(r.Context(), "Get dates", "dates", dates, "selected", selectedDate)
 

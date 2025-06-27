@@ -36,6 +36,16 @@
             z-index: 1000;
         }
 
+        #toggle-markers-btn {
+            position: absolute;
+            top: 20px;
+            left: 150px;
+            z-index: 1000;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
         #legend {
             position: absolute;
             top: 20px;
@@ -56,6 +66,33 @@
             height: 12px;
             margin-right: 8px;
             border-radius: 2px;
+        }
+        #legend .pilot-name {
+            background: none;
+            border: none;
+            font: inherit;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        #legend .pilot-name.ok {
+            background-color: #a0e6a0;
+        }
+        #legend .pilot-name:hover {
+            text-decoration: underline;
+        }
+        /* Ensure other columns don't squish together */
+        #legend .legend-col {
+            padding: 2px 6px;
+            min-width: 80px;
+            white-space: nowrap;
+        }
+        #legend .legend-col.right {
+            display: flex;
+            justify-content: flex-end;
+        }
+        #legend .legend-col.pilot {
+            min-width: 90px;
         }
 
         .custom-marker {
@@ -122,13 +159,39 @@
         hx-get="/dates"
         hx-trigger="load once"
         hx-target="#date-select"
-        hx-vals='js:{"date": getDate()}'
+        hx-vals='js:{"date": getSelectedDate()}'
         hx-swap="innerHTML"
         x-data
-        @change="$tellHTMXOptionChanged($event)">
+        @change="
+        window.selectedDate = $event.target.value;
+        $tellHTMXOptionChanged($event)">
+    "
     </select>
 
+    <button id="toggle-markers-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="${color}" class="bi bi-geo-alt-fill" viewBox="0 0 16 16" style="margin-right: 4px;">
+            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+        </svg>
+    </button>
+
     <script>
+
+        window.showAllMarkers = window.showAllMarkers ?? false;
+        window.selectedDate = window.selectedDate ?? new Date().toISOString().split('T')[0];
+
+        function getSelectedDate() {
+            return window.selectedDate;
+        }
+
+        document.getElementById("toggle-markers-btn").addEventListener("click", () => {
+            window.showAllMarkers = !window.showAllMarkers;
+
+            const selectedDate = getSelectedDate(); // Get selected date
+            console.log("Selected date: ", selectedDate);
+            console.log("Show all markers: ", window.showAllMarkers);
+            htmx.ajax("GET", `/tracks/${selectedDate}`, "#map-wrap");
+        });
+
         // convertDurationToTime converts nanoseconds duration to a string format hh:mm:ss.
         function convertDurationtoTime(duration) {
             dateObj = new Date(duration / 1000000);
@@ -141,21 +204,13 @@
                 + ':' + seconds.toString().padStart(2, '0');
         }
 
-        function getDate() {
-            const selectElement = document.getElementById("date-select");
-            if (selectElement && selectElement.options.length > 0) {
-                return selectElement.options[selectElement.selectedIndex].value;
-            }
-            return "";
-        }
-
         var eventSource = new EventSource("https://livetrack.fahy.xyz/events");
 
         eventSource.onmessage = function(event) {
             const data = JSON.parse(event.data);
             console.log("New track point received: ", data);
 
-            const selectedDate = getDate(); // Get selected date
+            const selectedDate = getSelectedDate(); // Get selected date
             console.log("Selected date: ", selectedDate);
             const today = new Date();
             const formattedDateToday = today.toISOString().split('T')[0];
@@ -191,7 +246,10 @@
             '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000'
         ];
 
+        let fullPilotData = {}; // Global reference
+
         function updateMapData(pilotData) {
+            fullPilotData = pilotData; // Store full data globally
             // Clear existing layers
             pilotLayers.forEach(layer => map.removeLayer(layer));
             pilotLayers = [];
@@ -216,6 +274,8 @@
                 // Draw polyline to represent the track
                 const polyline = L.polyline(latLngs, { color: color }).addTo(map);
 
+                let hasOKPoint = false;
+
                 // Add individual markers for each point with a popup showing details
                 points.forEach((point, i) => {
                     pointColor = color;
@@ -223,42 +283,45 @@
                     if (point.msgType == 'OK') {
                         pointColor = OK_COLOR;
                         pointText = "OK"
+                        hasOKPoint = true;
                     }
                     if (i == 0) {
                         pointColor = START_COLOR;
                         pointText = "ST"
                     }
 
-                    const icon = L.divIcon({
-                        className: 'leaflet-div-icon',
-                        html: `<div style="background-color: ${pointColor};">${pointText}</div>`,
-                        html: `<div style="
-                            background-color: ${pointColor};
-                            width: 100%;
-                            height: 100%;
-                            border-radius: 50%;
-                            display: flex;
-                            justify-content: center;
-                            align-items: center;">
-                            ${pointText}
-                        </div>`,
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 15],
-                    });
+                    if (i == 0 || point.msgType == 'OK' || window.showAllMarkers || i == points.length -1) {
+                        const icon = L.divIcon({
+                            className: 'leaflet-div-icon',
+                            html: `<div style="background-color: ${pointColor};">${pointText}</div>`,
+                            html: `<div style="
+                                background-color: ${pointColor};
+                                width: 100%;
+                                height: 100%;
+                                border-radius: 50%;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;">
+                                ${pointText}
+                            </div>`,
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 15],
+                        });
 
-                    // Add the marker to the map
-                    const marker = L.marker([point.latitude, point.longitude], { icon }).addTo(map);
+                        // Add the marker to the map
+                        const marker = L.marker([point.latitude, point.longitude], { icon }).addTo(map);
 
-                    marker.bindPopup(`
-                        <strong>${pilot}</strong><br>
-                        DateTime: ${new Date(point.dateTime).toLocaleString()}<br>
-                        Altitude: ${point.altitude} m<br>
-                        MsgType: ${point.msgType}<br>
-                        MsgContent: ${point.msgContent}<br>
-                        CumulativeDist: ${point.cumDist} km<br>
-                        AvgSpeed: ${point.avgSpeed} km/h<br>
-                        LegDist: ${point.legDist} km
-                    `);
+                        marker.bindPopup(`
+                            <strong>${pilot}</strong><br>
+                            DateTime: ${new Date(point.dateTime).toLocaleString('fr-CH')}<br>
+                            Altitude: ${point.altitude} m<br>
+                            MsgType: ${point.msgType}<br>
+                            MsgContent: ${point.msgContent}<br>
+                            CumulativeDist: ${point.cumDist.toFixed(2)} km<br>
+                            AvgSpeed: ${point.avgSpeed.toFixed(1)} km/h<br>
+                            LegDist: ${point.legDist.toFixed(2)} km
+                        `);
+                    }
 
                     // Add the point to allLatLngs for bounding later
                     allLatLngs.push([point.latitude, point.longitude]);
@@ -268,18 +331,49 @@
 
                 // Add each pilot to the legend with their color
                 const legendItem = document.createElement("div");
+                    //<button class="pilot-button" data-pilot-index="${index}" style="
+                    //    background: none;
+                    //    border: none;
+                    //    cursor: pointer;
+                    //    padding: 2px;
+                    //    margin-right: 2px;
+                    //">
+                    //<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="${color}" class="bi bi-geo-alt-fill" viewBox="0 0 16 16" style="margin-right: 4px;">
+                    //    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                    //</svg>
+                    //</button>
+
+                const pilotNameHTML = `
+                    <button class="pilot-name ${hasOKPoint ? 'ok' : ''}" data-pilot="${pilot}">
+                        ${pilot}
+                    </button>
+                `;
+
                 legendItem.innerHTML = `
-                    <span class="color-box" style="background-color: ${color};"></span>
-                    ${pilot}
-                    ${convertDurationtoTime(lastPoint.flightTime)}
-                    ${lastPoint.altitude} m
-                    ${lastPoint.cumDist.toFixed(2)} km
-                    ${lastPoint.avgSpeed.toFixed(1)} km/h
-                    ${new Date(lastPoint.dateTime).toLocaleString()}
+                    <div class="color-box" style="background-color: ${color};"></div>
+                    <div class="legend-col pilot">${pilotNameHTML}</div>
+                    <div class="legend-col">${convertDurationtoTime(lastPoint.flightTime)}</div>
+                    <div class="legend-col right">${lastPoint.altitude} m</div>
+                    <div class="legend-col right">${lastPoint.cumDist.toFixed(2)} km</div>
+                    <div class="legend-col right">${lastPoint.avgSpeed.toFixed(1)} km/h</div>
+                    <div class="legend-col right">${new Date(lastPoint.dateTime).toLocaleTimeString('fr-CH')}</div>
                 `;
                 legend.appendChild(legendItem);
             });
             console.log("Finished drawing points")
+
+            // Attach click event to all pilot name buttons
+            legend.querySelectorAll(".pilot-name").forEach(button => {
+                button.addEventListener("click", event => {
+                    const pilotName = event.target.dataset.pilot;
+
+                    // Get only that pilot's data
+                    const singlePilotData = { [pilotName]: fullPilotData[pilotName] };
+
+                    // Update the map to show only this pilot
+                    updateMapData(singlePilotData);
+                });
+            });
 
             // Only fit bounds if there are points
             if (allLatLngs.length > 0) {

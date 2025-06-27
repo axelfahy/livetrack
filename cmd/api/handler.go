@@ -30,8 +30,8 @@ func NewHandler(manager *db.Manager, logger *slog.Logger, metrics handlerMetrics
 	}
 }
 
-func (h *Handler) Ping(w http.ResponseWriter, _ *http.Request) {
-	h.logger.Info("Route triggered", "method", "GET", "route", "[/ping]")
+func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
+	h.logger.InfoContext(r.Context(), "Route triggered", "method", "GET", "route", "[/ping]")
 	w.WriteHeader(http.StatusOK)
 
 	if _, err := w.Write([]byte("{\"status\": \"pong\"}")); err != nil {
@@ -43,7 +43,7 @@ func (h *Handler) Ping(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (h *Handler) GetDatesWithCount(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info("Route triggered", "method", "GET", "route", "[/dates]")
+	h.logger.InfoContext(r.Context(), "Route triggered", "method", "GET", "route", "[/dates]")
 
 	dates, counts, err := h.manager.GetDatesWithCount(r.Context(), numberOfDates)
 	if err != nil {
@@ -70,7 +70,7 @@ func (h *Handler) GetDatesWithCount(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetPilots(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info("Route triggered", "method", "GET", "route", "[/pilots]")
+	h.logger.InfoContext(r.Context(), "Route triggered", "method", "GET", "route", "[/pilots]")
 
 	pilots, err := h.manager.GetAllPilots(r.Context())
 	if err != nil {
@@ -90,7 +90,7 @@ func (h *Handler) GetPilots(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetTracksOfDay(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info("Route triggered", "method", "GET", "route", "[/tracks/{date}]")
+	h.logger.DebugContext(r.Context(), "Route triggered", "method", "GET", "route", "[/tracks/{date}]")
 
 	date, err := time.Parse("2006-01-02", mux.Vars(r)["date"])
 	if err != nil {
@@ -99,6 +99,8 @@ func (h *Handler) GetTracksOfDay(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	h.logger.InfoContext(r.Context(), "Route triggered", "method", "GET", "route", "[/tracks/{date}]", "date", date)
 
 	tracks, err := h.manager.GetAllTracksOfDay(r.Context(), date)
 	if err != nil {
@@ -118,8 +120,7 @@ func (h *Handler) GetTracksOfDay(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetTrackOfDayForPilot(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info("Route triggered", "method", "GET", "route", "[/track/{date}/{pilot}]")
-
+	h.logger.DebugContext(r.Context(), "Route triggered", "method", "GET", "route", "[/track/{date}/{pilot}]")
 	date, err := time.Parse("2006-01-02", mux.Vars(r)["date"])
 	if err != nil {
 		h.logger.Error("Error retrieving parameter", "parameter", "date")
@@ -129,6 +130,7 @@ func (h *Handler) GetTrackOfDayForPilot(w http.ResponseWriter, r *http.Request) 
 	}
 
 	pilot := mux.Vars(r)["pilot"]
+	h.logger.InfoContext(r.Context(), "Route triggered", "method", "GET", "route", "[/track/{date}/{pilot}]", "pilot", pilot, "date", date)
 
 	pilotID, err := h.manager.GetPilotID(r.Context(), pilot)
 	if err != nil {
