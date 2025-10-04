@@ -7,10 +7,11 @@ import (
 	"log/slog"
 	"time"
 
-	"fahy.xyz/livetrack/internal/model"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lib/pq"
+
+	"fahy.xyz/livetrack/internal/model"
 )
 
 const errDuplicateKey = "23505"

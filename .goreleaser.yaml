@@ -1,0 +1,224 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    - go generate ./...
+
+builds:
+  - id: "api"
+    main: ./cmd/api
+    binary: livetrack-api
+    env:
+      - CGO_ENABLED=0
+    gcflags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/prometheus/common/version.Version={{.Version}}
+      - -X github.com/prometheus/common/version.Revision={{.FullCommit}}{{if eq .IsGitDirty true}}+CHANGES{{else}}{{end}}
+      - -X github.com/prometheus/common/version.Branch={{.Branch}}
+      - -X github.com/prometheus/common/version.BuildDate={{.Date}}
+      - -X github.com/prometheus/common/version.BuildUser=goreleaser
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+  - id: "bot"
+    main: ./cmd/bot
+    binary: livetrack-bot
+    env:
+      - CGO_ENABLED=0
+    gcflags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/prometheus/common/version.Version={{.Version}}
+      - -X github.com/prometheus/common/version.Revision={{.FullCommit}}{{if eq .IsGitDirty true}}+CHANGES{{else}}{{end}}
+      - -X github.com/prometheus/common/version.Branch={{.Branch}}
+      - -X github.com/prometheus/common/version.BuildDate={{.Date}}
+      - -X github.com/prometheus/common/version.BuildUser=goreleaser
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+  - id: "fetcher"
+    main: ./cmd/fetcher
+    binary: livetrack-fetcher
+    env:
+      - CGO_ENABLED=0
+    gcflags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/prometheus/common/version.Version={{.Version}}
+      - -X github.com/prometheus/common/version.Revision={{.FullCommit}}{{if eq .IsGitDirty true}}+CHANGES{{else}}{{end}}
+      - -X github.com/prometheus/common/version.Branch={{.Branch}}
+      - -X github.com/prometheus/common/version.BuildDate={{.Date}}
+      - -X github.com/prometheus/common/version.BuildUser=goreleaser
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+  - id: "sse"
+    main: ./cmd/sse
+    binary: livetrack-sse
+    env:
+      - CGO_ENABLED=0
+    gcflags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/prometheus/common/version.Version={{.Version}}
+      - -X github.com/prometheus/common/version.Revision={{.FullCommit}}{{if eq .IsGitDirty true}}+CHANGES{{else}}{{end}}
+      - -X github.com/prometheus/common/version.Branch={{.Branch}}
+      - -X github.com/prometheus/common/version.BuildDate={{.Date}}
+      - -X github.com/prometheus/common/version.BuildUser=goreleaser
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+  - id: "web"
+    main: ./cmd/web
+    binary: livetrack-web
+    env:
+      - CGO_ENABLED=0
+    gcflags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/prometheus/common/version.Version={{.Version}}
+      - -X github.com/prometheus/common/version.Revision={{.FullCommit}}{{if eq .IsGitDirty true}}+CHANGES{{else}}{{end}}
+      - -X github.com/prometheus/common/version.Branch={{.Branch}}
+      - -X github.com/prometheus/common/version.BuildDate={{.Date}}
+      - -X github.com/prometheus/common/version.BuildUser=goreleaser
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+dockers_v2:
+  - id: livetrack-api
+    ids:
+      - api
+    images:
+    - "fahy.xyz/livetrack-api"
+    tags:
+      - "v{{ .Version }}"
+      - "latest"
+    labels:
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.title": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+    flags:
+      - "--target=api"
+  - id: livetrack-bot
+    ids:
+      - bot
+    images:
+    - "fahy.xyz/livetrack-bot"
+    tags:
+      - "v{{ .Version }}"
+      - "latest"
+    labels:
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.title": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+    flags:
+      - "--target=bot"
+  - id: livetrack-fetcher
+    ids:
+      - fetcher
+    images:
+    - "fahy.xyz/livetrack-fetcher"
+    tags:
+      - "v{{ .Version }}"
+      - "latest"
+    labels:
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.title": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+    flags:
+      - "--target=fetcher"
+  - id: livetrack-sse
+    ids:
+      - sse
+    images:
+    - "fahy.xyz/livetrack-sse"
+    tags:
+      - "v{{ .Version }}"
+      - "latest"
+    labels:
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.title": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+    flags:
+      - "--target=sse"
+  - id: livetrack-web
+    ids:
+      - web
+    images:
+    - "fahy.xyz/livetrack-web"
+    tags:
+      - "v{{ .Version }}"
+      - "latest"
+    labels:
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.title": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+    flags:
+      - "--target=web"
+
+archives:
+  - formats: [tar.gz]
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+release:
+  footer: >-
+
+    ---
+
+    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).

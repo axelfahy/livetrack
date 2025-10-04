@@ -12,14 +12,15 @@ import (
 	"time"
 
 	"codnect.io/chrono"
-	"fahy.xyz/livetrack/internal/db"
-	"fahy.xyz/livetrack/internal/fetcher"
-	"fahy.xyz/livetrack/internal/metrics"
-	"fahy.xyz/livetrack/internal/model"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/version"
 	"github.com/sourcegraph/conc/pool"
+
+	"fahy.xyz/livetrack/internal/db"
+	"fahy.xyz/livetrack/internal/fetcher"
+	"fahy.xyz/livetrack/internal/metrics"
+	"fahy.xyz/livetrack/internal/model"
 )
 
 type envConfig struct {
@@ -208,7 +209,6 @@ func run(env envConfig, logger *slog.Logger) error {
 			time.Sleep(fetchDelay)
 		}
 	}, env.FetchInterval)
-
 	if err == nil {
 		logger.Info("Task has been scheduled successfully")
 	}

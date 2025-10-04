@@ -1,87 +1,24 @@
-FROM --platform=$BUILDPLATFORM golang:alpine AS builder
+FROM alpine:3.22 AS api
+ARG TARGETPLATFORM
+COPY  $TARGETPLATFORM/livetrack-api /usr/bin/livetrack-api
+CMD ["/usr/bin/livetrack-api"]
 
-ARG TARGETOS
-ARG TARGETARCH
-ARG GIT_COMMIT
-ARG GIT_DIRTY
-ARG BUILD_DATE
-ARG VERSION
+FROM alpine:3.22 AS bot
+ARG TARGETPLATFORM
+COPY  $TARGETPLATFORM/livetrack-bot /usr/bin/livetrack-bot
+CMD ["/usr/bin/livetrack-bot"]
 
-COPY . /src
+FROM alpine:3.22 AS fetcher
+ARG TARGETPLATFORM
+COPY  $TARGETPLATFORM/livetrack-fetcher /usr/bin/livetrack-fetcher
+CMD ["/usr/bin/livetrack-fetcher"]
 
-WORKDIR /src
+FROM alpine:3.22 AS sse
+ARG TARGETPLATFORM
+COPY  $TARGETPLATFORM/livetrack-sse /usr/bin/livetrack-sse
+CMD ["/usr/bin/livetrack-sse"]
 
-FROM builder AS builder-api
-RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
-    go build -trimpath -o livetrack-api \
-    -ldflags "-w -s \
-              -X github.com/prometheus/common/version.Version=${VERSION} \
-              -X github.com/prometheus/common/version.Revision=${GIT_COMMIT}${GIT_DIRTY} \
-              -X github.com/prometheus/common/version.Branch=${GIT_BRANCH} \
-              -X github.com/prometheus/common/version.BuildUser=${GIT_USER} \
-              -X github.com/prometheus/common/version.BuildDate=${BUILD_DATE}" \
-    ./cmd/api
-
-FROM builder AS builder-bot
-RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
-    go build -trimpath -o livetrack-bot \
-    -ldflags "-w -s \
-              -X github.com/prometheus/common/version.Version=${VERSION} \
-              -X github.com/prometheus/common/version.Revision=${GIT_COMMIT}${GIT_DIRTY} \
-              -X github.com/prometheus/common/version.Branch=${GIT_BRANCH} \
-              -X github.com/prometheus/common/version.BuildUser=${GIT_USER} \
-              -X github.com/prometheus/common/version.BuildDate=${BUILD_DATE}" \
-    ./cmd/bot
-
-FROM builder AS builder-fetcher
-RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
-    go build -trimpath -o livetrack-fetcher \
-    -ldflags "-w -s \
-              -X github.com/prometheus/common/version.Version=${VERSION} \
-              -X github.com/prometheus/common/version.Revision=${GIT_COMMIT}${GIT_DIRTY} \
-              -X github.com/prometheus/common/version.Branch=${GIT_BRANCH} \
-              -X github.com/prometheus/common/version.BuildUser=${GIT_USER} \
-              -X github.com/prometheus/common/version.BuildDate=${BUILD_DATE}" \
-    ./cmd/fetcher
-
-FROM builder AS builder-sse
-RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
-    go build -trimpath -o livetrack-sse \
-    -ldflags "-w -s \
-              -X github.com/prometheus/common/version.Version=${VERSION} \
-              -X github.com/prometheus/common/version.Revision=${GIT_COMMIT}${GIT_DIRTY} \
-              -X github.com/prometheus/common/version.Branch=${GIT_BRANCH} \
-              -X github.com/prometheus/common/version.BuildUser=${GIT_USER} \
-              -X github.com/prometheus/common/version.BuildDate=${BUILD_DATE}" \
-    ./cmd/sse
-
-FROM builder AS builder-web
-RUN env GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 \
-    go build -trimpath -o livetrack-web \
-    -ldflags "-w -s \
-              -X github.com/prometheus/common/version.Version=${VERSION} \
-              -X github.com/prometheus/common/version.Revision=${GIT_COMMIT}${GIT_DIRTY} \
-              -X github.com/prometheus/common/version.Branch=${GIT_BRANCH} \
-              -X github.com/prometheus/common/version.BuildUser=${GIT_USER} \
-              -X github.com/prometheus/common/version.BuildDate=${BUILD_DATE}" \
-    ./cmd/web
-
-FROM --platform=$BUILDPLATFORM alpine:3.21 AS api
-COPY --from=builder-api /src/livetrack-api /livetrack-api
-CMD ["/livetrack-api"]
-
-FROM --platform=$BUILDPLATFORM alpine:3.21 AS bot
-COPY --from=builder-bot /src/livetrack-bot /livetrack-bot
-CMD ["/livetrack-bot"]
-
-FROM --platform=$BUILDPLATFORM alpine:3.21 AS fetcher
-COPY --from=builder-fetcher /src/livetrack-fetcher /livetrack-fetcher
-CMD ["/livetrack-fetcher"]
-
-FROM --platform=$BUILDPLATFORM alpine:3.21 AS sse
-COPY --from=builder-sse /src/livetrack-sse /livetrack-sse
-CMD ["/livetrack-sse"]
-
-FROM --platform=$BUILDPLATFORM alpine:3.21 AS web
-COPY --from=builder-web /src/livetrack-web /livetrack-web
-CMD ["/livetrack-web"]
+FROM alpine:3.22 AS web
+ARG TARGETPLATFORM
+COPY  $TARGETPLATFORM/livetrack-web /usr/bin/livetrack-web
+CMD ["/usr/bin/livetrack-web"]

@@ -20,8 +20,10 @@ linters:
     - godox
     - mnd
     - noctx
+    - noinlineerr
     - nosprintfhostport
     - testpackage
+    - wsl
   settings:
     tagalign:
       sort: false
@@ -59,6 +61,14 @@ formatters:
     - gofmt
     - gofumpt
     - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(fahy.xyz/livetrack)
+        - blank
+        - dot
   exclusions:
     generated: lax
     paths:

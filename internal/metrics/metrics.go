@@ -9,7 +9,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/common/version"
 )
 
@@ -63,42 +62,42 @@ func NewPrometheusMetrics(subsys string) (*Prometheus, *prometheus.Registry, err
 		func() float64 { return 1 },
 	)
 
-	prom.msgsFetchedTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+	prom.msgsFetchedTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name:      "msgs_fetched_total",
 		Help:      "Number of messages fetched from trackers by source",
 		Namespace: Namespace,
 		Subsystem: subsys,
 	}, []string{"source"})
 
-	prom.pilotsRetrievedTotal = promauto.NewCounter(prometheus.CounterOpts{
+	prom.pilotsRetrievedTotal = prometheus.NewCounter(prometheus.CounterOpts{
 		Name:      "pilots_retrieved_total",
 		Help:      "Number of calls to retrieve pilots from the database",
 		Namespace: Namespace,
 		Subsystem: subsys,
 	})
 
-	prom.tracksRetrievedTotal = promauto.NewCounter(prometheus.CounterOpts{
+	prom.tracksRetrievedTotal = prometheus.NewCounter(prometheus.CounterOpts{
 		Name:      "tracks_retrieved_total",
 		Help:      "Number of calls to retrieve tracks from the database",
 		Namespace: Namespace,
 		Subsystem: subsys,
 	})
 
-	prom.tracksWrittenTotal = promauto.NewCounter(prometheus.CounterOpts{
+	prom.tracksWrittenTotal = prometheus.NewCounter(prometheus.CounterOpts{
 		Name:      "tracks_written_total",
 		Help:      "Number of tracks written to the database",
 		Namespace: Namespace,
 		Subsystem: subsys,
 	})
 
-	prom.msgsBotSentTotal = promauto.NewCounter(prometheus.CounterOpts{
+	prom.msgsBotSentTotal = prometheus.NewCounter(prometheus.CounterOpts{
 		Name:      "msgs_bot_sent_total",
 		Help:      "Number of messages sent to telegram",
 		Namespace: Namespace,
 		Subsystem: subsys,
 	})
 
-	prom.msgsBotRemovedTotal = promauto.NewCounter(prometheus.CounterOpts{
+	prom.msgsBotRemovedTotal = prometheus.NewCounter(prometheus.CounterOpts{
 		Name:      "msgs_bot_removed_total",
 		Help:      "Number of messages removed from telegram",
 		Namespace: Namespace,
@@ -118,7 +117,7 @@ func NewPrometheusMetrics(subsys string) (*Prometheus, *prometheus.Registry, err
 	}, []string{"code", "path"})
 
 	prom.clientsCount = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:      "clients_count",
+		Name:      "connected_clients_count",
 		Help:      "Number of clients connected to SSE.",
 		Namespace: Namespace,
 		Subsystem: subsys,
@@ -188,6 +187,6 @@ func (p *Prometheus) Error(code int, endpoint string) {
 
 // SSE metrics.
 func (p *Prometheus) AddClient()            { p.clientsCount.Inc() }
-func (p *Prometheus) DelClient()            { p.clientsCount.Sub(1.0) }
+func (p *Prometheus) DelClient()            { p.clientsCount.Dec() }
 func (p *Prometheus) MsgsSent()             { p.msgsSSESentTotal.Inc() }
 func (p *Prometheus) NotificationReceived() { p.databaseNotificationsReceivedTotal.Inc() }

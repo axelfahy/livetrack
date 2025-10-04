@@ -11,8 +11,9 @@ import (
 	"net/url"
 	"time"
 
-	"fahy.xyz/livetrack/internal/model"
 	"github.com/gorilla/mux"
+
+	"fahy.xyz/livetrack/internal/model"
 )
 
 const (

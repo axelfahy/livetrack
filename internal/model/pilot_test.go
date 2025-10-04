@@ -7,9 +7,10 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"fahy.xyz/livetrack/internal/model"
 	"fahy.xyz/livetrack/internal/model/spot"
-	"github.com/stretchr/testify/assert"
 )
 
 const trackFile = "spot/testdata/response_long_full.json"

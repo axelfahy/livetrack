@@ -1,6 +1,6 @@
 module fahy.xyz/livetrack
 
-go 1.24.0
+go 1.25.1
 
 require (
 	codnect.io/chrono v1.1.3
