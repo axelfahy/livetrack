@@ -189,7 +189,7 @@
 
     <script>
         // Global state management
-        const AppState = {
+        window.AppState = window.AppState || {
             currentData: null,
             map: null,
             pilotLayers: [],

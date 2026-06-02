@@ -21,7 +21,7 @@ type Handler struct {
 	metrics handlerMetrics
 }
 
-type handlerMetrics interface{}
+type handlerMetrics any
 
 func NewHandler(manager *db.Manager, logger *slog.Logger, metrics handlerMetrics) *Handler {
 	return &Handler{

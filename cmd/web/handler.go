@@ -20,7 +20,7 @@ const (
 	timeout = 10 * time.Second
 )
 
-type handlerMetrics interface{}
+type handlerMetrics any
 
 type Handler struct {
 	endpoint string
