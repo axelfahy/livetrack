@@ -4,33 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Livetracking</title>
-    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-svgicon@0.0.2/index.min.js"></script>
-    <script src="svg-icon.js" type="text/plain"></script>
 
     <style>
-        :root {
-            --start-color: #5f65d3;
-            --ok-color: #21772a;
-            --surface-color: rgba(255, 255, 255, 0.9);
-            --shadow: 0 2px 8px rgba(0,0,0,0.15);
-            --border-radius: 8px;
-            --spacing-sm: 8px;
-            --spacing-md: 16px;
-            --spacing-lg: 24px;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
         html, body {
             height: 100%;
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         #map-wrap {
@@ -40,7 +20,7 @@
         }
 
         #map {
-		    position: absolute;
+            position: absolute;
             width: 100%;
             height: 100%;
         }
@@ -52,16 +32,6 @@
             z-index: 1000;
         }
 
-        #toggle-markers-btn {
-            position: absolute;
-            top: 20px;
-            left: 150px;
-            z-index: 1000;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-
         #legend {
             position: absolute;
             top: 20px;
@@ -71,82 +41,53 @@
             padding: 10px;
             border-radius: 5px;
             box-shadow: 0 0 5px rgba(0,0,0,0.3);
+            flex-direction: column;
         }
         #legend div {
             display: flex;
             align-items: center;
             margin-bottom: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+        #legend div.disabled {
+            opacity: 0.4;
+            text-decoration: line-through;
         }
         #legend .color-box {
             width: 12px;
             height: 12px;
             margin-right: 8px;
             border-radius: 2px;
+            flex-shrink: 0;
         }
         #legend .pilot-name {
+            margin-right: 6px;
+        }
+        #legend .pilot-stats {
+            font-size: 0.85em;
+            color: #555;
+        }
+        #toggle-markers-btn {
+            position: absolute;
+            top: 20px;
+            left: 150px;
+            z-index: 1000;
             background: none;
             border: none;
-            font: inherit;
             cursor: pointer;
-            padding: 2px 6px;
-            border-radius: 4px;
         }
-        #legend .pilot-name.ok {
-            background-color: #a0e6a0;
+        #show-all-btn {
+            margin-top: 8px;
+            font-size: 0.85em;
+            cursor: pointer;
+            color: #0078ff;
+            background: none;
+            border: none;
+            padding: 0;
         }
-        #legend .pilot-name:hover {
+        #show-all-btn:hover {
             text-decoration: underline;
-        }
-        /* Ensure other columns don't squish together */
-        #legend .legend-col {
-            padding: 2px 6px;
-            min-width: 80px;
-            white-space: nowrap;
-        }
-        #legend .legend-col.right {
-            display: flex;
-            justify-content: flex-end;
-        }
-        #legend .legend-col.pilot {
-            min-width: 90px;
-        }
-
-        .custom-marker {
-            position: relative;
-            width: 30px;
-            height: 40px;
-            color: white;
-            font-size: 14px;
-            font-weight: bold;
-            text-align: center;
-            line-height: 40px;
-            border-radius: 20px 20px 20px 20px; /* Makes the top circular */
-        }
-
-        .custom-marker .icon-body {
-            background-color: var(--marker-color, #0078ff);
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            position: relative;
-            z-index: 2;
-            line-height: 30px;
-        }
-
-        .custom-marker::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 15px;
-            width: 10px;
-            height: 10px;
-            background-color: inherit; /* Use the same color as the main marker */
-            transform: rotate(-45deg);
-            z-index: -1;
-        }
-
-        .custom-marker-number {
-            transform: rotate(-45deg); /* Corrects the rotation for the number */
         }
 
         .leaflet-div-icon {
@@ -166,92 +107,91 @@
     <div id="map-wrap">
         <div id="map"></div>
 
+        <div id="legend"></div>
+    </div>
+
+    <dif id="controls">
+        <select id="date-select" name="date"></select>
         <button id="toggle-markers-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="${color}" class="bi bi-geo-alt-fill" viewBox="0 0 16 16" style="margin-right: 4px;">
                 <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
             </svg>
         </button>
-
-        <div id="legend"></div>
     </div>
 
-    <select
-        id="date-select"
-        name="date"
-        hx-get="/dates"
-        hx-trigger="load once"
-        hx-target="#date-select"
-        hx-vals='js:{"date": getSelectedDate()}'
-        hx-swap="innerHTML"
-        x-data
-        @change="handleDateChange($event)">
-    </select>
-
     <script>
-        // Global state management
-        window.AppState = window.AppState || {
-            currentData: null,
-            map: null,
-            pilotLayers: [],
-            colors: [
-                '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4',
-                '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff',
-                '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1',
-                '#000075', '#808080', '#ffffff', '#000000'
-            ],
-            START_COLOR: '#5f65d3',
-            OK_COLOR: '#21772a'
-        };
-
-        window.getSelectedDate = () => this.selectedDate;
-
-        function handleDateChange(event) {
-            this.selectedDate = event.target.value;
-            this.$tellHTMXOptionChanged(event);
-        }
-
-        window.showAllMarkers = window.showAllMarkers ?? false;
-        window.selectedDate = window.selectedDate ?? new Date().toISOString().split('T')[0];
-
-        function getSelectedDate() {
-            return window.selectedDate;
-        }
-
-        document.getElementById("toggle-markers-btn").addEventListener("click", () => {
-            window.showAllMarkers = !window.showAllMarkers;
-
-            const selectedDate = getSelectedDate(); // Get selected date
-            console.log("Selected date: ", selectedDate);
-            console.log("Show all markers: ", window.showAllMarkers);
-            htmx.ajax("GET", `/tracks/${selectedDate}`, "#map-wrap");
-        });
-
         // convertDurationToTime converts nanoseconds duration to a string format hh:mm:ss.
         function convertDurationtoTime(duration) {
-            dateObj = new Date(duration / 1000000);
-            hours = dateObj.getUTCHours();
-            minutes = dateObj.getUTCMinutes();
-            seconds = dateObj.getSeconds();
+            const dateObj = new Date(duration / 1000000);
+            const hours = dateObj.getUTCHours();
+            const minutes = dateObj.getUTCMinutes();
+            const seconds = dateObj.getSeconds();
 
             return hours.toString().padStart(2, '0')
                 + ':' + minutes.toString().padStart(2, '0')
                 + ':' + seconds.toString().padStart(2, '0');
         }
 
-        var eventSource = new EventSource("https://livetrack.fahy.xyz/events");
+        function getSelectedDate() {
+            const selectElement = document.getElementById("date-select");
+            if (selectElement && selectElement.options.length > 0) {
+                return selectElement.options[selectElement.selectedIndex].value;
+            }
+            return "";
+        }
+
+        function loadDates() {
+            fetch("/dates")
+                .then(function(resp) {
+                    if (!resp.ok) throw new Error("HTTP " + resp.status);
+                    return resp.json();
+                })
+                .then(function(dates) {
+                    const select = document.getElementById("date-select");
+                    const today = new Date().toISOString().split('T')[0];
+
+                    dates.forEach(function(date) {
+                        const opt = document.createElement("option");
+                        opt.value = date;
+                        if (date === today) {
+                            opt.textContent = "Today";
+                        } else {
+                            opt.textContent = date;
+                        }
+                        select.appendChild(opt);
+                    });
+                })
+                .catch(function(err) {
+                    console.error("Failed to load dates:", err);
+                });
+        }
+
+        function loadTracks(date) {
+            fetch(`/tracks/${date}`)
+                .then(function(resp) {
+                    if (!resp.ok) throw new Error("HTTP " + resp.status);
+                    return resp.json();
+                })
+                .then(function(data) {
+                    updateMapData(data);
+                })
+                .catch(function(err) {
+                    console.error("Failed to load tracks:", err);
+                });
+        }
+
+        var eventSource = new EventSource("{{ .EventsEndpoint }}");
 
         eventSource.onmessage = function(event) {
             const data = JSON.parse(event.data);
             console.log("New track point received: ", data);
 
-            const selectedDate = getSelectedDate(); // Get selected date
-            console.log("Selected date: ", selectedDate);
+            const selectedDate = getSelectedDate();
             const today = new Date();
             const formattedDateToday = today.toISOString().split('T')[0];
-            console.log("Today: ", formattedDateToday);
 
-            if (selectedDate == formattedDateToday) {
-                htmx.ajax("GET", `/tracks/${selectedDate}`, "#map-wrap");
+            if (selectedDate === formattedDateToday) {
+                loadTracks(selectedDate);
             }
         };
 
@@ -259,19 +199,19 @@
             console.log("SSE connection lost, attempting to reconnect...");
         };
 
+        var START_COLOR = '#5f65d3';
+        var OK_COLOR = '#21772a';
 
-        var START_COLOR = '#5f65d3'
-        var OK_COLOR = '#21772a'
-        // Initialize the map, setting a default view
-        var map = L.map('map', {zoomControl: false}).setView([51.505, -0.09], 3); // Initial latitude, longitude, and zoom
-        var pilotLayers = [];
+        var map = L.map('map', {zoomControl: false}).setView([51.505, -0.09], 3);
+        var pilotGroups = {};
+        var currentData = {};
+        var pilotVisibility = {};
+        var showAllMarkers = false;
 
-        // Zoom buttons at bottom left.
         L.control.zoom({
             position: 'bottomright'
         }).addTo(map);
 
-        // Load and add a base layer (e.g., OpenStreetMap)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
@@ -281,179 +221,193 @@
         ];
 
         function updateMapData(pilotData) {
-            // Clear existing layers
-            pilotLayers.forEach(layer => map.removeLayer(layer));
-            pilotLayers = [];
+            Object.values(pilotGroups).forEach(function(group) { map.removeLayer(group); });
+            pilotGroups = {};
+            currentData = pilotData;
+
             const legend = document.getElementById("legend");
             legend.style.display = "none";
             legend.textContent = "";
 
-            // Array to store all coordinates for fitting bounds
             const allLatLngs = [];
+            const pilotMap = new Map(Object.entries(pilotData));
 
-            let pilotMap = new Map(Object.entries(pilotData));
+            let colorIndex = 0;
+            Array.from(pilotMap.entries()).forEach(function([pilot, points]) {
+                const group = L.layerGroup();
+                const latLngs = points.map(function(point) { return [point.latitude, point.longitude]; });
+                const color = colors[colorIndex % colors.length];
+                colorIndex++;
 
-            console.log("Updating map with new data:", pilotMap);
+                L.polyline(latLngs, { color: color }).addTo(group);
 
-            Array.from(pilotMap.entries()).forEach(([pilot, points], index) => {
-                // Create a polyline array for connecting points for this pilot
-                const latLngs = points.map(point => [point.latitude, point.longitude]);
-
-                // Get a unique color for this pilot's track
-                const color = colors[index % colors.length];
-
-                // Draw polyline to represent the track
-                const polyline = L.polyline(latLngs, { color: color }).addTo(map);
-
-                let hasOKPoint = false;
-
-                // Add individual markers for each point with a popup showing details
-                points.forEach((point, i) => {
-                    pointColor = color;
-                    pointText = i
-                    if (point.msgType == 'OK') {
-                        pointColor = OK_COLOR;
-                        pointText = "OK"
-                        hasOKPoint = true;
-                    }
-                    if (i == 0) {
-                        pointColor = START_COLOR;
-                        pointText = "ST"
-                    }
-
-                    if (i == 0 || point.msgType == 'OK' || window.showAllMarkers || i == points.length -1) {
-                        const icon = L.divIcon({
-                            className: 'leaflet-div-icon',
-                            html: `<div style="background-color: ${pointColor};">${pointText}</div>`,
-                            html: `<div style="
-                                background-color: ${pointColor};
-                                width: 100%;
-                                height: 100%;
-                                border-radius: 50%;
-                                display: flex;
-                                justify-content: center;
-                                align-items: center;">
-                                ${pointText}
-                            </div>`,
-                            iconSize: [30, 30],
-                            iconAnchor: [15, 15],
-                        });
-
-                        // Add the marker to the map
-                        const marker = L.marker([point.latitude, point.longitude], { icon }).addTo(map);
-
-                        marker.bindPopup(`
-                            <strong>${pilot}</strong><br>
-                            DateTime: ${new Date(point.dateTime).toLocaleString('fr-CH')}<br>
-                            Altitude: ${point.altitude} m<br>
-                            MsgType: ${point.msgType}<br>
-                            MsgContent: ${point.msgContent}<br>
-                            CumulativeDist: ${point.cumDist.toFixed(2)} km<br>
-                            AvgSpeed: ${point.avgSpeed.toFixed(1)} km/h<br>
-                            LegDist: ${point.legDist.toFixed(2)} km
-                        `);
-                    }
-
-                    // Add the point to allLatLngs for bounding later
+                points.forEach(function(point, i) {
                     allLatLngs.push([point.latitude, point.longitude]);
+
+                    const isKeyMarker = i == 0 || point.msgType == 'OK' || window.showAllMarkers || i == points.length -1
+                    if (!showAllMarkers && !isKeyMarker) {
+                        return;
+                    }
+
+                    let pointColor = color;
+                    let pointText = String(i);
+                    if (point.msgType === 'OK') {
+                        pointColor = OK_COLOR;
+                        pointText = "OK";
+                    }
+                    if (i === 0) {
+                        pointColor = START_COLOR;
+                        pointText = "ST";
+                    }
+
+                    const icon = L.divIcon({
+                        className: 'leaflet-div-icon',
+                        html: '<div style="background-color: ' + pointColor + '; width: 100%; height: 100%; border-radius: 50%; display: flex; justify-content: center; align-items: center;">' + pointText + '</div>',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15],
+                    });
+
+                    const marker = L.marker([point.latitude, point.longitude], { icon: icon }).addTo(group);
+
+                    marker.bindPopup(
+                        '<strong>' + pilot + '</strong><br>' +
+                        'DateTime: ' + new Date(point.dateTime).toLocaleString() + '<br>' +
+                        'Altitude: ' + point.altitude + ' m<br>' +
+                        'MsgType: ' + point.msgType + '<br>' +
+                        'MsgContent: ' + point.msgContent + '<br>' +
+                        'CumulativeDist: ' + point.cumDist + ' km<br>' +
+                        'AvgSpeed: ' + point.avgSpeed + ' km/h<br>' +
+                        'LegDist: ' + point.legDist + ' km'
+                    );
                 });
 
-                const lastPoint = points[points.length-1]
+                if (pilotVisibility[pilot] !== false) {
+                    group.addTo(map);
+                }
 
-                // Add each pilot to the legend with their color
+                pilotGroups[pilot] = group;
+
+                const lastPoint = points[points.length - 1];
+
                 const legendItem = document.createElement("div");
-                    //<button class="pilot-button" data-pilot-index="${index}" style="
-                    //    background: none;
-                    //    border: none;
-                    //    cursor: pointer;
-                    //    padding: 2px;
-                    //    margin-right: 2px;
-                    //">
-                    //<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="${color}" class="bi bi-geo-alt-fill" viewBox="0 0 16 16" style="margin-right: 4px;">
-                    //    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-                    //</svg>
-                    //</button>
+                if (pilotVisibility[pilot] === false) {
+                    legendItem.className = "disabled";
+                }
+                legendItem.dataset.pilot = pilot;
+                legendItem.innerHTML =
+                    '<span class="color-box" style="background-color: ' + color + ';"></span>' +
+                    '<span class="pilot-name">' + pilot + '</span>' +
+                    '<span class="pilot-stats">' +
+                    convertDurationtoTime(lastPoint.flightTime) + ' ' +
+                    lastPoint.altitude + ' m ' +
+                    lastPoint.cumDist.toFixed(2) + ' km ' +
+                    lastPoint.avgSpeed.toFixed(1) + ' km/h ' +
+                    new Date(lastPoint.dateTime).toLocaleString() +
+                    '</span>';
 
-                const pilotNameHTML = `
-                    <button class="pilot-name ${hasOKPoint ? 'ok' : ''}" data-pilot="${pilot}">
-                        ${pilot}
-                    </button>
-                `;
+                legendItem.addEventListener("click", function(e) {
+                    togglePilot(pilot);
+                });
 
-                legendItem.innerHTML = `
-                    <div class="color-box" style="background-color: ${color};"></div>
-                    <div class="legend-col pilot">${pilotNameHTML}</div>
-                    <div class="legend-col">${convertDurationtoTime(lastPoint.flightTime)}</div>
-                    <div class="legend-col right">${lastPoint.altitude} m</div>
-                    <div class="legend-col right">${lastPoint.cumDist.toFixed(2)} km</div>
-                    <div class="legend-col right">${lastPoint.avgSpeed.toFixed(1)} km/h</div>
-                    <div class="legend-col right">${new Date(lastPoint.dateTime).toLocaleTimeString('fr-CH')}</div>
-                `;
+                legendItem.addEventListener("dblclick", function(e) {
+                    e.preventDefault();
+                    soloPilot(pilot);
+                });
+
                 legend.appendChild(legendItem);
             });
-            console.log("Finished drawing points")
 
-            // Attach click event to all pilot name buttons
-            legend.querySelectorAll(".pilot-name").forEach(button => {
-                button.addEventListener("click", event => {
-                    const pilotName = event.target.dataset.pilot;
-
-                    // Get only that pilot's data
-                    const singlePilotData = { [pilotName]: fullPilotData[pilotName] };
-
-                    // Update the map to show only this pilot
-                    updateMapData(singlePilotData);
-                });
+            const showAllBtn = document.createElement("button");
+            showAllBtn.id = "show-all-btn";
+            showAllBtn.textContent = "Show all";
+            showAllBtn.addEventListener("click", function() {
+                showAllPilots();
             });
+            legend.appendChild(showAllBtn);
 
-            // Only fit bounds if there are points
             if (allLatLngs.length > 0) {
                 legend.style.display = "flex";
                 map.fitBounds(allLatLngs);
             }
         }
 
-        // Initial data from Go server
-        var initialData = JSON.parse(`{{ . }}`);
-        console.log("Init data: ", initialData);
-        updateMapData(initialData);
+        function togglePilot(pilot) {
+            const group = pilotGroups[pilot];
+            if (!group) return;
 
-        // Make map responsive to window resizing
-        window.addEventListener('resize', () => map.invalidateSize());
+            const visible = pilotVisibility[pilot] !== false;
+            pilotVisibility[pilot] = !visible;
 
-        document.addEventListener('alpine:init', () => {
-            Alpine.magic('tellHTMXOptionChanged', (el) => {
-                // This is needed for cross-browser compatability for when a <select> changes
-                return (event) => {
-                    function renderXPathSelector(value) {
-                        return `.//option[contains(., '${value}')]`
+            if (visible) {
+                map.removeLayer(group);
+            } else {
+                group.addTo(map);
+            }
+
+            updateLegendState();
+        }
+
+        function soloPilot(pilot) {
+            const anyHidden = Object.values(pilotVisibility).some(function(v) { return v === false; });
+            const onlyThisVisible = !anyHidden || (pilotVisibility[pilot] !== false && Object.keys(pilotVisibility).every(function(p) { return p === pilot || pilotVisibility[p] === false; }));
+
+            if (onlyThisVisible && !anyHidden) {
+                Object.keys(pilotGroups).forEach(function(p) {
+                    pilotVisibility[p] = p === pilot;
+                    if (p === pilot) {
+                        pilotGroups[p].addTo(map);
+                    } else {
+                        map.removeLayer(pilotGroups[p]);
                     }
+                });
+            } else {
+                Object.keys(pilotGroups).forEach(function(p) {
+                    pilotVisibility[p] = true;
+                    pilotGroups[p].addTo(map);
+                });
+            }
 
-                    function getChosenOption(value) {
-                        return document.evaluate(renderXPathSelector(value), el).iterateNext()
-                    }
+            updateLegendState();
+        }
 
-                    const selectedOption = el.querySelector(`[value="${el.value}"]`) ||
-                    getChosenOption(event.target.value)
-                    htmx.trigger(selectedOption, 'click')
+        function showAllPilots() {
+            Object.keys(pilotGroups).forEach(function(p) {
+                pilotVisibility[p] = true;
+                pilotGroups[p].addTo(map);
+            });
+            updateLegendState();
+        }
 
-                    targetDescription = htmx.closest(selectedOption, '[hx-target]').attributes['hx-target'].value
-                    if (targetDescription === 'this') {
-                        target = htmx.closest(selectedOption, '[hx-target]')
-                    }
-                    else if (targetDescription.startsWith('closest')) {
-                        selector = targetDescription.split(' ')[1]
-                        target = htmx.closest(selector)
-                    }
-                    else {
-                        target = htmx.find(targetDescription)
-                    }
-
-                    htmx.ajax('GET', selectedOption.attributes['hx-get'].value, target)
+        function updateLegendState() {
+            const legendItems = document.querySelectorAll("#legend div[data-pilot]");
+            legendItems.forEach(function(item) {
+                const pilot = item.dataset.pilot;
+                if (pilotVisibility[pilot] === false) {
+                    item.className = "disabled";
+                } else {
+                    item.className = "";
                 }
-            })
+            });
+        }
 
-        })
+        var initialData = {{ .Tracks }}
+        updateMapData(initialData);
+        loadDates();
+
+        window.addEventListener('resize', function() { map.invalidateSize(); });
+
+        document.getElementById("date-select").addEventListener("change", function() {
+            const date = this.value;
+            if (date) {
+                pilotVisibility = {};
+                loadTracks(date);
+            }
+        });
+        document.getElementById("toggle-markers-btn").addEventListener("click", () => {
+            showAllMarkers = !showAllMarkers;
+            this.textContent = showAllMarkers ? "Show key markers" : "Show all markers";
+            updateMapData(currentData);
+        });
     </script>
 </body>
 </html>
