@@ -121,7 +121,9 @@ dockers_v2:
     ids:
       - api
     images:
-    - "fahy.xyz/livetrack-api"
+      - "{{ .Env.REPO }}/fahy.xyz/livetrack-api"
+    platforms:
+      - linux/arm64
     tags:
       - "v{{ .Version }}"
       - "latest"
@@ -137,7 +139,9 @@ dockers_v2:
     ids:
       - bot
     images:
-    - "fahy.xyz/livetrack-bot"
+      - "{{ .Env.REPO }}/fahy.xyz/livetrack-bot"
+    platforms:
+      - linux/arm64
     tags:
       - "v{{ .Version }}"
       - "latest"
@@ -153,7 +157,9 @@ dockers_v2:
     ids:
       - fetcher
     images:
-    - "fahy.xyz/livetrack-fetcher"
+      - "{{ .Env.REPO }}/fahy.xyz/livetrack-fetcher"
+    platforms:
+      - linux/arm64
     tags:
       - "v{{ .Version }}"
       - "latest"
@@ -169,7 +175,9 @@ dockers_v2:
     ids:
       - sse
     images:
-    - "fahy.xyz/livetrack-sse"
+      - "{{ .Env.REPO }}/fahy.xyz/livetrack-sse"
+    platforms:
+      - linux/arm64
     tags:
       - "v{{ .Version }}"
       - "latest"
@@ -185,7 +193,9 @@ dockers_v2:
     ids:
       - web
     images:
-    - "fahy.xyz/livetrack-web"
+      - "{{ .Env.REPO }}/fahy.xyz/livetrack-web"
+    platforms:
+      - linux/arm64
     tags:
       - "v{{ .Version }}"
       - "latest"
