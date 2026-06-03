@@ -39,7 +39,7 @@ type Prometheus struct {
 func NewPrometheusMetrics(subsys string) (*Prometheus, *prometheus.Registry, error) {
 	prom := &Prometheus{}
 	promReg := prometheus.NewPedanticRegistry()
-	errs := make([]error, 0)
+	errs := make([]error, 0, 15)
 
 	programName := os.Args[0]
 

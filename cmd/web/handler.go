@@ -261,12 +261,13 @@ func (h *Handler) getTracksOfDay(ctx context.Context, date string) (template.JS,
 
 	h.logger.Info("[GET]", "url", reqURL)
 
+	//nolint:gosec // G704: date is already validated.
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return "", fmt.Errorf("creating request: %w", err)
 	}
 
-	resp, err := h.client.Do(req)
+	resp, err := h.client.Do(req) //nolint:gosec // G704: date is already validated.
 	if err != nil {
 		return "", fmt.Errorf("executing request: %w", err)
 	}
@@ -318,12 +319,13 @@ func (h *Handler) getTrackOfDayForPilot(ctx context.Context, date, pilot string)
 		return "", fmt.Errorf("parsing URL: %w", err)
 	}
 
+	//nolint:gosec // G704: date and pilot are already validated.
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return "", fmt.Errorf("creating request: %w", err)
 	}
 
-	resp, err := h.client.Do(req)
+	resp, err := h.client.Do(req) //nolint:gosec // G704: date and pilot are already validated.
 	if err != nil {
 		return "", fmt.Errorf("executing request: %w", err)
 	}

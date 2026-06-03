@@ -18,6 +18,7 @@ linters:
     - funlen
     - gocognit
     - godox
+    - gomodguard
     - mnd
     - noctx
     - noinlineerr
@@ -27,6 +28,8 @@ linters:
   settings:
     cyclop:
       max-complexity: 12
+    funlen:
+      ignore-comments: true
     tagalign:
       sort: false
     varnamelen:
