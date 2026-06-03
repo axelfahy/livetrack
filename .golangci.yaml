@@ -25,6 +25,8 @@ linters:
     - testpackage
     - wsl
   settings:
+    cyclop:
+      max-complexity: 12
     tagalign:
       sort: false
     varnamelen:

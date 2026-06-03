@@ -162,21 +162,17 @@ func NewPrometheusMetrics(subsys string) (*Prometheus, *prometheus.Registry, err
 	return prom, promReg, nil
 }
 
-// Fetcher metrics.
 func (p *Prometheus) MessageFetched(source string) {
 	p.msgsFetchedTotal.WithLabelValues(source).Inc()
 }
 
-// Database manager.
 func (p *Prometheus) PilotRetrieved() { p.pilotsRetrievedTotal.Inc() }
 func (p *Prometheus) TrackRetrieved() { p.tracksRetrievedTotal.Inc() }
 func (p *Prometheus) TrackWritten()   { p.tracksWrittenTotal.Inc() }
 
-// Telegram bot metrics.
 func (p *Prometheus) MessageSent()    { p.msgsBotSentTotal.Inc() }
 func (p *Prometheus) MessageRemoved() { p.msgsBotRemovedTotal.Inc() }
 
-// Web metrics.
 func (p *Prometheus) Request(method, endpoint string, duration time.Duration) {
 	p.requests.WithLabelValues(method, endpoint).Observe(duration.Seconds())
 }
@@ -185,7 +181,6 @@ func (p *Prometheus) Error(code int, endpoint string) {
 	p.errors.WithLabelValues(strconv.Itoa(code), endpoint).Inc()
 }
 
-// SSE metrics.
 func (p *Prometheus) AddClient()            { p.clientsCount.Inc() }
 func (p *Prometheus) DelClient()            { p.clientsCount.Dec() }
 func (p *Prometheus) MsgsSent()             { p.msgsSSESentTotal.Inc() }

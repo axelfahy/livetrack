@@ -103,6 +103,7 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 		err    error
 	)
 
+	//nolint:nestif // Too many errors to check; to be refactored.
 	if pilot != "" {
 		tracks, err = h.getTrackOfDayForPilot(r.Context(), today, pilot)
 		if err != nil {

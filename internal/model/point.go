@@ -34,8 +34,6 @@ func (p *Point) GetItineraryURL() string {
 	return fmt.Sprintf("%s(%s%f,%f&travelmode=driving)", linkName, baseURL, p.Latitude, p.Longitude)
 }
 
-// TODO: find better names
-// TODO: assert that some values exist.
 func (p *Point) ComputeFlightTime(start Point) {
 	p.FlightTime = p.DateTime.Sub(start.DateTime)
 }
