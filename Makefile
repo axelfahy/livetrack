@@ -1,4 +1,4 @@
-VERSION=v2.3.0
+VERSION=v2.6.0
 BUILDPLATFORM=linux/arm64
 GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
@@ -7,6 +7,7 @@ BUILD_DATE=$(shell date '+%Y-%m-%d-%H:%M:%S')
 GO_PACKAGE=fahy.xyz/livetrack
 GO_REGISTRY := $(if ${REGISTRY},$(patsubst %/,%,${REGISTRY})/)
 
+.PHONY: all ensure ctm lint test package-api push-api package-bot push-bot package-fetcher push-fetcher package-web push-web
 all: ensure push-api push-bot push-fetcher push-web
 
 ensure:
@@ -18,10 +19,9 @@ clean:
 
 fmt:
 	gofumpt -l -w .
-	wsl --fix ./...
 
 lint:
-	golangci-lint run -c .golangci.yaml ./...
+	golangci-lint run -c .golangci.yaml --fix ./...
 
 test:
 	go test -race ./...
@@ -102,4 +102,3 @@ package-web:
 
 push-web: package-web
 	docker push $(GO_REGISTRY)$(GO_PACKAGE)-web:$(VERSION)
-

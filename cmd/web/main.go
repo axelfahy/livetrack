@@ -11,12 +11,13 @@ import (
 	"syscall"
 	"time"
 
-	"fahy.xyz/livetrack/internal/metrics"
 	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/version"
 	"github.com/sourcegraph/conc/pool"
+
+	"fahy.xyz/livetrack/internal/metrics"
 )
 
 type envConfig struct {
@@ -26,7 +27,8 @@ type envConfig struct {
 	// Metrics
 	MetricsSubsystem string `envconfig:"METRICS_SUBSYSTEM" default:"web" desc:"The Prometheus subsystem for the metrics"`
 
-	APIEndpoint string `envconfig:"API_ENDPOINT" default:"https://livetrack.fahy.xyz/api/" desc:"The endpoint to retrieve the tracks"`
+	APIEndpoint string `envconfig:"API_ENDPOINT" default:"https://livetrack.fahy.xyz/api/"   desc:"The endpoint to retrieve the tracks"`
+	SSEEndpoint string `envconfig:"SSE_ENDPOINT" default:"https://livetrack.fahy.xyz/events" desc:"The SSE endpoint for live updates"`
 }
 
 const (
@@ -116,7 +118,7 @@ func run(env envConfig, logger *slog.Logger) error {
 		return nil
 	})
 
-	handler := NewHandler(env.APIEndpoint, logger.With("component", "handler"), promMetrics)
+	handler := NewHandler(env.APIEndpoint, env.SSEEndpoint, logger.With("component", "handler"), promMetrics)
 
 	router.HandleFunc("/", handler.Home)
 	router.HandleFunc("/dates", handler.GetDates)

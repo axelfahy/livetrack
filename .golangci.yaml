@@ -18,11 +18,18 @@ linters:
     - funlen
     - gocognit
     - godox
+    - gomodguard
     - mnd
     - noctx
+    - noinlineerr
     - nosprintfhostport
     - testpackage
+    - wsl
   settings:
+    cyclop:
+      max-complexity: 12
+    funlen:
+      ignore-comments: true
     tagalign:
       sort: false
     varnamelen:
@@ -59,6 +66,14 @@ formatters:
     - gofmt
     - gofumpt
     - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(fahy.xyz/livetrack)
+        - blank
+        - dot
   exclusions:
     generated: lax
     paths:

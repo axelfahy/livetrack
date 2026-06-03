@@ -5,9 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"fahy.xyz/livetrack/internal/model/spot"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"fahy.xyz/livetrack/internal/model/spot"
 )
 
 func TestMessagesToPoint(t *testing.T) {
