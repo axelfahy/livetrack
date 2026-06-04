@@ -27,5 +27,6 @@ go.work
 # Added by goreleaser init:
 dist/
 
+# Init script
 tools/setup/init_all.sql
 

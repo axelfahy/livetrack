@@ -34,15 +34,15 @@
 
         #org-select {
             position: absolute;
-            top: 20px;
-            left: 160px;
+            top: 50px;
+            left: 30px;
             z-index: 1000;
         }
 
         #legend {
             position: absolute;
             top: 20px;
-            left: 290px;
+            left: 200px;
             z-index: 1000;
             background-color: rgba(255, 255, 255, 0.9);
             padding: 10px;
@@ -255,16 +255,23 @@
                 });
         }
 
+        function isPilotInOrg(pilot) {
+            return !selectedOrg || (pilotOrgs[pilot] && pilotOrgs[pilot].indexOf(selectedOrg) !== -1);
+        }
+
         function filterByOrg(org) {
             selectedOrg = org;
             Object.keys(pilotGroups).forEach(function(pilot) {
-                var isInOrg = !org || (pilotOrgs[pilot] && pilotOrgs[pilot].indexOf(org) !== -1);
+                var isInOrg = isPilotInOrg(pilot);
+                var legendItem = document.querySelector('#legend div[data-pilot="' + pilot + '"]');
                 if (isInOrg) {
                     if (pilotVisibility[pilot] !== false) {
                         pilotGroups[pilot].addTo(map);
                     }
+                    if (legendItem) legendItem.style.display = "flex";
                 } else {
                     map.removeLayer(pilotGroups[pilot]);
+                    if (legendItem) legendItem.style.display = "none";
                 }
             });
             updateLegendState();
@@ -284,6 +291,7 @@
 
             let colorIndex = 0;
             Array.from(pilotMap.entries()).forEach(function([pilot, points]) {
+                var isInOrg = isPilotInOrg(pilot);
                 const group = L.layerGroup();
                 const latLngs = points.map(function(point) { return [point.latitude, point.longitude]; });
                 const color = colors[colorIndex % colors.length];
@@ -332,7 +340,6 @@
                 });
 
                 if (pilotVisibility[pilot] !== false) {
-                    var isInOrg = !selectedOrg || (pilotOrgs[pilot] && pilotOrgs[pilot].indexOf(selectedOrg) !== -1);
                     if (isInOrg) {
                         group.addTo(map);
                     }
@@ -343,8 +350,11 @@
                 const lastPoint = points[points.length - 1];
 
                 const legendItem = document.createElement("div");
-                if (pilotVisibility[pilot] === false) {
+                if (pilotVisibility[pilot] === false || !isInOrg) {
                     legendItem.className = "disabled";
+                }
+                if (!isInOrg) {
+                    legendItem.style.display = "none";
                 }
                 legendItem.dataset.pilot = pilot;
                 legendItem.innerHTML =
@@ -391,7 +401,8 @@
             const visible = pilotVisibility[pilot] !== false;
             pilotVisibility[pilot] = !visible;
 
-            if (visible) {
+            var isInOrg = isPilotInOrg(pilot);
+            if (visible || !isInOrg) {
                 map.removeLayer(group);
             } else {
                 group.addTo(map);
@@ -401,13 +412,15 @@
         }
 
         function soloPilot(pilot) {
+            var isInOrg = isPilotInOrg(pilot);
+
             const anyHidden = Object.values(pilotVisibility).some(function(v) { return v === false; });
             const onlyThisVisible = !anyHidden || (pilotVisibility[pilot] !== false && Object.keys(pilotVisibility).every(function(p) { return p === pilot || pilotVisibility[p] === false; }));
 
             if (onlyThisVisible && !anyHidden) {
                 Object.keys(pilotGroups).forEach(function(p) {
                     pilotVisibility[p] = p === pilot;
-                    if (p === pilot) {
+                    if (p === pilot && pIsInOrg) {
                         pilotGroups[p].addTo(map);
                     } else {
                         map.removeLayer(pilotGroups[p]);
@@ -415,8 +428,13 @@
                 });
             } else {
                 Object.keys(pilotGroups).forEach(function(p) {
+                    var pIsInOrg = isPilotInOrg(pilot);
                     pilotVisibility[p] = true;
-                    pilotGroups[p].addTo(map);
+                    if (pIsInOrg) {
+                        pilotGroups[p].addTo(map);
+                    } else {
+                        map.removeLayer(pilotGroups[p]);
+                    }
                 });
             }
 
@@ -426,7 +444,11 @@
         function showAllPilots() {
             Object.keys(pilotGroups).forEach(function(p) {
                 pilotVisibility[p] = true;
-                pilotGroups[p].addTo(map);
+                if (isPilotInOrg(p)) {
+                    pilotGroups[p].addTo(map);
+                } else {
+                    map.removeLayer(pilotGroups[p]);
+                }
             });
             updateLegendState();
         }
@@ -435,8 +457,7 @@
             const legendItems = document.querySelectorAll("#legend div[data-pilot]");
             legendItems.forEach(function(item) {
                 const pilot = item.dataset.pilot;
-                var isInOrg = !selectedOrg || (pilotOrgs[pilot] && pilotOrgs[pilot].indexOf(selectedOrg) !== -1);
-                if (!isInOrg || pilotVisibility[pilot] === false) {
+                if (!isPilotInOrg(pilot) || pilotVisibility[pilot] === false) {
                     item.className = "disabled";
                 } else {
                     item.className = "";
