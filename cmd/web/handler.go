@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -55,12 +56,14 @@ type handlerMetrics any
 
 type templateData struct {
 	Tracks         template.JS
+	PilotOrgs      template.JS
 	EventsEndpoint string
 }
 
 type Handler struct {
 	apiEndpoint string
 	sseEndpoint string
+	orgs        []string
 	client      *http.Client
 	template    *template.Template
 	logger      *slog.Logger
@@ -70,16 +73,26 @@ type Handler struct {
 //go:embed views/*
 var views embed.FS
 
-func NewHandler(apiEndpoint, sseEndpoint string, logger *slog.Logger, metrics handlerMetrics) *Handler {
+func NewHandler(apiEndpoint, sseEndpoint, orgsStr string, logger *slog.Logger, metrics handlerMetrics) *Handler {
 	tViews := template.Must(template.ParseFS(views, "views/*"))
 
 	client := &http.Client{
 		Timeout: timeout,
 	}
 
+	var orgs []string
+
+	for o := range strings.SplitSeq(orgsStr, ",") {
+		o = strings.TrimSpace(o)
+		if o != "" {
+			orgs = append(orgs, o)
+		}
+	}
+
 	return &Handler{
 		apiEndpoint: apiEndpoint,
 		sseEndpoint: sseEndpoint,
+		orgs:        orgs,
 		client:      client,
 		template:    tViews,
 		logger:      logger,
@@ -137,8 +150,17 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.logger.DebugContext(r.Context(), "Tracks", "date", "today", "tracks", tracks)
+
+	pilotOrgs, err := h.getPilotOrgs(r.Context())
+	if err != nil {
+		h.logger.ErrorContext(r.Context(), "Retrieving pilots", "error", err)
+
+		pilotOrgs = template.JS("{}")
+	}
+
 	data := templateData{
 		Tracks:         tracks,
+		PilotOrgs:      pilotOrgs,
 		EventsEndpoint: h.sseEndpoint,
 	}
 
@@ -215,6 +237,77 @@ func (h *Handler) GetDates(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(result); err != nil {
 		h.logger.ErrorContext(r.Context(), "Encoding dates", "error", err)
 		http.Error(w, "error encoding dates", http.StatusInternalServerError)
+	}
+}
+
+// GetOrgs retrieves the list of deduplicated organizations.
+func (h *Handler) GetOrgs(w http.ResponseWriter, r *http.Request) {
+	h.logger.InfoContext(r.Context(), "[/orgs]")
+
+	reqURL, err := url.JoinPath(h.apiEndpoint, "/orgs")
+	if err != nil {
+		h.logger.ErrorContext(r.Context(), "Parsing url", "error", err)
+		http.Error(w, "error parsing url", http.StatusInternalServerError)
+
+		return
+	}
+
+	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, reqURL, nil)
+	if err != nil {
+		h.logger.ErrorContext(r.Context(), "Creating request", "error", err)
+		http.Error(w, "error creating request", http.StatusInternalServerError)
+
+		return
+	}
+
+	resp, err := h.client.Do(req)
+	if err != nil {
+		h.logger.ErrorContext(r.Context(), "Retrieving orgs", "error", err)
+		http.Error(w, "error retrieving orgs", http.StatusInternalServerError)
+
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		h.logger.ErrorContext(r.Context(), "Unexpected status from API", "status", resp.StatusCode, "body", string(body))
+		http.Error(w, "error retrieving orgs", http.StatusInternalServerError)
+
+		return
+	}
+
+	var orgs []string
+	if err := json.NewDecoder(resp.Body).Decode(&orgs); err != nil {
+		h.logger.ErrorContext(r.Context(), "Parsing orgs", "error", err)
+		http.Error(w, "error parsing orgs", http.StatusInternalServerError)
+
+		return
+	}
+
+	if len(h.orgs) > 0 {
+		orgSet := make(map[string]struct{}, len(h.orgs))
+		for _, o := range h.orgs {
+			orgSet[o] = struct{}{}
+		}
+
+		filtered := make([]string, 0, len(orgs))
+		for _, o := range orgs {
+			if _, ok := orgSet[o]; ok {
+				filtered = append(filtered, o)
+			}
+		}
+
+		orgs = filtered
+	}
+
+	h.logger.DebugContext(r.Context(), "Organizations retrieved", "orgs", orgs)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(orgs); err != nil {
+		h.logger.ErrorContext(r.Context(), "Encoding orgs", "error", err)
+		http.Error(w, "error encoding orgs", http.StatusInternalServerError)
 	}
 }
 
@@ -302,6 +395,53 @@ func (h *Handler) getTracksOfDay(ctx context.Context, date string) (template.JS,
 	}
 
 	return template.JS(jsonData), nil //nolint:gosec // G203: JSON from json.Marshal is safe in JS context
+}
+
+func (h *Handler) getPilotOrgs(ctx context.Context) (template.JS, error) {
+	reqURL, err := url.JoinPath(h.apiEndpoint, "/pilots")
+	if err != nil {
+		return "", fmt.Errorf("parsing URL: %w", err)
+	}
+
+	h.logger.Info("[GET]", "url", reqURL)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("creating request: %w", err)
+	}
+
+	resp, err := h.client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("executing request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("unable to read body: %w", err)
+		}
+
+		return "", fmt.Errorf("%s %w: %d", string(body), errUnexpectedStatusCode, resp.StatusCode)
+	}
+
+	var pilots []model.Pilot
+	if err := json.NewDecoder(resp.Body).Decode(&pilots); err != nil {
+		return "", fmt.Errorf("parsing pilots: %w", err)
+	}
+
+	pilotOrgMap := make(map[string][]string)
+
+	for _, p := range pilots {
+		pilotOrgMap[p.Name] = p.Orgs
+	}
+
+	pilotOrgsJSON, err := json.Marshal(pilotOrgMap)
+	if err != nil {
+		return "", fmt.Errorf("marshalling pilot orgs: %w", err)
+	}
+
+	return template.JS(pilotOrgsJSON), nil //nolint:gosec // G203: JSON from json.Marshal is safe in JS context
 }
 
 // getTrackOfDayForPilot retrieves the pilot's track for the given day.

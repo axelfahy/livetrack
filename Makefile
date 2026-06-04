@@ -1,4 +1,4 @@
-VERSION=v3.0.0
+VERSION=v3.1.0
 BUILDPLATFORM=linux/arm64
 GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)

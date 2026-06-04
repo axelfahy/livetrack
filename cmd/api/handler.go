@@ -90,6 +90,26 @@ func (h *Handler) GetPilots(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *Handler) GetOrgs(w http.ResponseWriter, r *http.Request) {
+	h.logger.InfoContext(r.Context(), "Route triggered", "method", "GET", "route", "[/orgs]")
+
+	orgs, err := h.manager.GetOrgs(r.Context())
+	if err != nil {
+		h.logger.Error("Error retrieving orgs", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+
+	w.Header().Set("Content-type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(orgs); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+}
+
 func (h *Handler) GetTracksOfDay(w http.ResponseWriter, r *http.Request) {
 	h.logger.DebugContext(r.Context(), "Route triggered", "method", "GET", "route", "[/tracks/{date}]")
 
