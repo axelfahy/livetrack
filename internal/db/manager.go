@@ -161,6 +161,24 @@ func (m *Manager) GetPilotID(ctx context.Context, name string) (string, error) {
 	return pilotID, nil
 }
 
+func (m *Manager) GetOrgs(ctx context.Context) ([]string, error) {
+	rows, err := m.client.Query(ctx, "SELECT DISTINCT unnest(orgs) AS org FROM pilot ORDER BY org")
+	if err != nil {
+		return nil, fmt.Errorf("querying orgs: %w", err)
+	}
+
+	defer rows.Close()
+
+	orgs, err := pgx.CollectRows(rows, pgx.RowTo[string])
+	if err != nil {
+		return nil, fmt.Errorf("collecting rows: %w", err)
+	}
+
+	m.logger.Debug("Orgs retrieved", "orgs", orgs)
+
+	return orgs, nil
+}
+
 func (m *Manager) GetPilotsFromOrg(ctx context.Context, org string) ([]model.Pilot, error) {
 	rows, err := m.client.Query(ctx, "SELECT id, name, home, orgs, tracker_type FROM pilot WHERE $1=ANY(orgs)", org)
 	if err != nil {

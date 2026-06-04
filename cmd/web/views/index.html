@@ -32,10 +32,17 @@
             z-index: 1000;
         }
 
+        #org-select {
+            position: absolute;
+            top: 20px;
+            left: 160px;
+            z-index: 1000;
+        }
+
         #legend {
             position: absolute;
             top: 20px;
-            left: 200px;
+            left: 290px;
             z-index: 1000;
             background-color: rgba(255, 255, 255, 0.9);
             padding: 10px;
@@ -112,6 +119,7 @@
 
     <dif id="controls">
         <select id="date-select" name="date"></select>
+        <select id="org-select" name="org"></select>
         <button id="toggle-markers-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="${color}" class="bi bi-geo-alt-fill" viewBox="0 0 16 16" style="margin-right: 4px;">
                 <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
@@ -207,6 +215,8 @@
         var currentData = {};
         var pilotVisibility = {};
         var showAllMarkers = false;
+        var pilotOrgs = {{ .PilotOrgs }};
+        var selectedOrg = "";
 
         L.control.zoom({
             position: 'bottomright'
@@ -219,6 +229,46 @@
         var colors = [
             '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000'
         ];
+
+        function populateOrgs() {
+            fetch("/orgs")
+                .then(function(resp) {
+                    if (!resp.ok) throw new Error("HTTP " + resp.status);
+                    return resp.json();
+                })
+                .then(function(orgs) {
+                    const select = document.getElementById("org-select");
+                    const allOpt = document.createElement("option");
+                    allOpt.value = "";
+                    allOpt.textContent = "All organizations";
+                    select.appendChild(allOpt);
+
+                    orgs.forEach(function(org) {
+                        const opt = document.createElement("option");
+                        opt.value = org;
+                        opt.textContent = org;
+                        select.appendChild(opt);
+                    });
+                })
+                .catch(function(err) {
+                    console.error("Failed to load orgs:", err);
+                });
+        }
+
+        function filterByOrg(org) {
+            selectedOrg = org;
+            Object.keys(pilotGroups).forEach(function(pilot) {
+                var isInOrg = !org || (pilotOrgs[pilot] && pilotOrgs[pilot].indexOf(org) !== -1);
+                if (isInOrg) {
+                    if (pilotVisibility[pilot] !== false) {
+                        pilotGroups[pilot].addTo(map);
+                    }
+                } else {
+                    map.removeLayer(pilotGroups[pilot]);
+                }
+            });
+            updateLegendState();
+        }
 
         function updateMapData(pilotData) {
             Object.values(pilotGroups).forEach(function(group) { map.removeLayer(group); });
@@ -275,14 +325,17 @@
                         'Altitude: ' + point.altitude + ' m<br>' +
                         'MsgType: ' + point.msgType + '<br>' +
                         'MsgContent: ' + point.msgContent + '<br>' +
-                        'CumulativeDist: ' + point.cumDist + ' km<br>' +
-                        'AvgSpeed: ' + point.avgSpeed + ' km/h<br>' +
-                        'LegDist: ' + point.legDist + ' km'
+                        'CumulativeDist: ' + point.cumDist.toFixed(2) + ' km<br>' +
+                        'AvgSpeed: ' + point.avgSpeed.toFixed(2) + ' km/h<br>' +
+                        'LegDist: ' + point.legDist.toFixed(2) + ' km'
                     );
                 });
 
                 if (pilotVisibility[pilot] !== false) {
-                    group.addTo(map);
+                    var isInOrg = !selectedOrg || (pilotOrgs[pilot] && pilotOrgs[pilot].indexOf(selectedOrg) !== -1);
+                    if (isInOrg) {
+                        group.addTo(map);
+                    }
                 }
 
                 pilotGroups[pilot] = group;
@@ -382,7 +435,8 @@
             const legendItems = document.querySelectorAll("#legend div[data-pilot]");
             legendItems.forEach(function(item) {
                 const pilot = item.dataset.pilot;
-                if (pilotVisibility[pilot] === false) {
+                var isInOrg = !selectedOrg || (pilotOrgs[pilot] && pilotOrgs[pilot].indexOf(selectedOrg) !== -1);
+                if (!isInOrg || pilotVisibility[pilot] === false) {
                     item.className = "disabled";
                 } else {
                     item.className = "";
@@ -393,6 +447,7 @@
         var initialData = {{ .Tracks }}
         updateMapData(initialData);
         loadDates();
+        populateOrgs();
 
         window.addEventListener('resize', function() { map.invalidateSize(); });
 
@@ -402,6 +457,9 @@
                 pilotVisibility = {};
                 loadTracks(date);
             }
+        });
+        document.getElementById("org-select").addEventListener("change", function() {
+            filterByOrg(this.value);
         });
         document.getElementById("toggle-markers-btn").addEventListener("click", () => {
             showAllMarkers = !showAllMarkers;

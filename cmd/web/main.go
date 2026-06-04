@@ -29,6 +29,7 @@ type envConfig struct {
 
 	APIEndpoint string `envconfig:"API_ENDPOINT" default:"https://livetrack.fahy.xyz/api/"   desc:"The endpoint to retrieve the tracks"`
 	SSEEndpoint string `envconfig:"SSE_ENDPOINT" default:"https://livetrack.fahy.xyz/events" desc:"The SSE endpoint for live updates"`
+	Orgs        string `envconfig:"ORGS"         default:""                                  desc:"Comma-separated whitelist of organizations to display"`
 }
 
 const (
@@ -118,10 +119,11 @@ func run(env envConfig, logger *slog.Logger) error {
 		return nil
 	})
 
-	handler := NewHandler(env.APIEndpoint, env.SSEEndpoint, logger.With("component", "handler"), promMetrics)
+	handler := NewHandler(env.APIEndpoint, env.SSEEndpoint, env.Orgs, logger.With("component", "handler"), promMetrics)
 
 	router.HandleFunc("/", handler.Home)
 	router.HandleFunc("/dates", handler.GetDates)
+	router.HandleFunc("/orgs", handler.GetOrgs)
 	router.HandleFunc("/tracks/{date}", handler.GetTracks)
 
 	logger.Info("Livetrack web tracking initialized")
