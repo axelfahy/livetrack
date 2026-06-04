@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-06-04
+
+### Added
+
+- Filtering by organizations
+
+### Changed
+
+- Round digits in points
+
 ## [3.0.0] - 2026-06-03
 
 ### Added
@@ -26,10 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Option to toggle all points
 - Put link in telegram messages
 - Put color of pilot in green if OK has been received
-
-### Changed
-
-- Round digits in points
 
 ### Removed
 
